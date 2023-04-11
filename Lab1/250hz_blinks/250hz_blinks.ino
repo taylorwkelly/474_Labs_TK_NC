@@ -36,7 +36,7 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
   if (i > 2){
-    digitalWrite(2, HIGH);
+    analogWrite(2, 255);
   }
   else{
     //Should be 125
