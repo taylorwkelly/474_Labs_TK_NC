@@ -1,4 +1,5 @@
-#define daguy 10
+#define LEDPIN 10
+#define PWMPIN 2
 /*
   Blink
 
@@ -26,32 +27,17 @@
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
-  pinMode(daguy, OUTPUT);
+  pinMode(LEDPIN, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(2, OUTPUT);
+  pinMode(PWMPIN, OUTPUT);
   
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  digitalWrite(daguy, HIGH);  // turn the LED on (HIGH is the voltage level)
+  digitalWrite(LEDPIN, HIGH);  // turn the LED on (HIGH is the voltage level)
   digitalWrite(LED_BUILTIN, LOW);
-  digitalWrite(2, LOW);
-  delay(50);
-  digitalWrite(2, HIGH);
-  delay(1000);                      // wait for a second
-
-
-  
-  // 
-  // 
-  digitalWrite(daguy, LOW);   // turn the LED off by making the voltage LOW
-  digitalWrite(LED_BUILTIN, HIGH);
-  digitalWrite(2, LOW);
-  delay(100);
-  digitalWrite(2, HIGH);
-  delay(1000);                      // wait for a second
-
+  digitalWrite(PWMPIN, LOW);
 
 
 }
