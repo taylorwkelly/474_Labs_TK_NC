@@ -1,6 +1,4 @@
-#define LEDPIN 10
-#define PWMPIN 2
-int i = 0;
+#define LED_OUT 10
 /*
   Blink
 
@@ -28,29 +26,27 @@ int i = 0;
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
-  pinMode(LEDPIN, OUTPUT);
+  pinMode(LED_OUT, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(PWMPIN, OUTPUT);
+  pinMode(2, OUTPUT);
   
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  if (i > 2){
-    analogWrite(2, 255);
-    digitalWrite(PWMPIN, HIGH);
-  }
-  else{
-    //Should be 125
-    analogWrite(PWMPIN, 125);
-        
-  }
-  i = i+1;
-  digitalWrite(LEDPIN, HIGH);  // turn the LED on (HIGH is the voltage level)
+  digitalWrite(2, LOW);
+  delay(5);
+  digitalWrite(2, HIGH);
+
+  digitalWrite(LED_OUT, HIGH);  // turn the LED on (HIGH is the voltage level)
   digitalWrite(LED_BUILTIN, LOW);
   delay(1000);                      // wait for a second
 
-  digitalWrite(LEDPIN, LOW);   // turn the LED off by making the voltage LOW
+  digitalWrite(2, LOW);
+  delay(5);
+  digitalWrite(2, HIGH);
+
+  digitalWrite(LED_OUT, LOW);   // turn the LED off by making the voltage LOW
   digitalWrite(LED_BUILTIN, HIGH);
   delay(1000);                      // wait for a second
 }
