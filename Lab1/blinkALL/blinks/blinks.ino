@@ -14,9 +14,10 @@
 #ifndef OFF_B
   #define OFF_B 0
 #endif
+int i = 0;
 
 void spkr_click();
-void spkr_sound();
+int8_t spkr_sound();
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -28,6 +29,7 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
+  int8_t sounded;
   if (ON_B && !OFF_B) {
     digitalWrite(LED_BUILTIN, HIGH);
   } else if (OFF_B && !ON_B) {
@@ -36,9 +38,16 @@ void loop() {
     digitalWrite(LEDPIN, HIGH);
     digitalWrite(LED_BUILTIN, LOW);
     // spkr_click();
-    spkr_sound();
+    if(i < 10){
+      sounded = spkr_sound();
+      
+    }
+    else
+      sounded = 0;
+    
   }
-  delay(200);
+  if (sounded == 0)
+    delay(200);
 
   if (ON_B && !OFF_B) {
     digitalWrite(LED_BUILTIN, LOW);
@@ -48,9 +57,17 @@ void loop() {
     digitalWrite(LEDPIN, LOW);
     digitalWrite(LED_BUILTIN, HIGH);
     // spkr_click();
-    spkr_sound();
+    if(i < 10){
+      sounded = spkr_sound();
+    }
+    else
+      sounded = 0;
+
   }
-  delay(200);
+  if (sounded == 0)
+    delay(200);
+  if (i < 10)
+    i += 1;
 }
 
 void spkr_click() {
@@ -59,21 +76,15 @@ void spkr_click() {
   digitalWrite(PWMPIN, LOW);
 }
 
-void spkr_sound() {
-  unsigned long my_time = millis();
-  unsigned long stop_time = my_time + 200;
-  unsigned long HALF_PERIOD = 2;
-  int state = 0;
-  while (my_time < stop_time) {
-    my_time = millis();
-    if (my_time % HALF_PERIOD == 0) {
-      state = state == 0 ? 1 : 0;
-    }
-    if (state) {
-      digitalWrite(PWMPIN, HIGH);
-    } else {
+int8_t spkr_sound() {
+  for (int itr = 0; itr < 100; itr++) {
+    if (itr % 2 == 0) {
       digitalWrite(PWMPIN, LOW);
+      delay(2);
+    } else if (itr % 2 == 1) {
+      digitalWrite(PWMPIN, HIGH);
+      delay(2);
     }
   }
-  
+  return 1;
 }
