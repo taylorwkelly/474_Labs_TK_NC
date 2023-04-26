@@ -1,7 +1,7 @@
-#include "Lab2_header.h";
+#include "Task1.h";
 
 void setup() {
-  if (digiwrite && !bitwrite) pinMode(47, OUTPUT); pinMode(48, OUTPUT); pinMode(49, OUTPUT);
+  if (digiwrite && !bitwrite) pinMode(REDLED_PIN, OUTPUT); pinMode(GREENLED_PIN, OUTPUT); pinMode(BLUELED_PIN, OUTPUT);
   if (bitwrite && !digiwrite) DDRL |= BIT_0; DDRL |= BIT_1; DDRL |= BIT_2;
 }
 
@@ -13,17 +13,17 @@ void loop() {
 void digiWriteBlinks() {
   for (int i = 0; i < 1000; i++) {
       if (i == 0) {
-        digitalWrite(47, HIGH);
+        digitalWrite(REDLED_PIN, HIGH);
       } else if (i == 333) {
-        digitalWrite(47, LOW);
-        digitalWrite(48, HIGH);
+        digitalWrite(REDLED_PIN, LOW);
+        digitalWrite(GREENLED_PIN, HIGH);
       } else if (i == 666) {
-        digitalWrite(48, LOW);
-        digitalWrite(49, HIGH);
+        digitalWrite(GREENLED_PIN, LOW);
+        digitalWrite(BLUELED_PIN, HIGH);
       }
       delay(1);
     }
-    digitalWrite(49, LOW);
+    digitalWrite(BLUELED_PIN, LOW);
     delay(1);
 }
 
