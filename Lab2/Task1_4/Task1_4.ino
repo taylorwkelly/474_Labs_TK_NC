@@ -1,6 +1,6 @@
-#define REDLED PL2 //DDRD bit 6
-#define GREENLED PL1 //DDRD bit 7
-#define BLUELED PL0 //DDRE bit 0
+#define REDLED PL2 //DDRL bit 6
+#define GREENLED PL1 //DDRL bit 7
+#define BLUELED PL0 //DDRL bit 0
 #define BITSHIFT 7<<5;
 
 void setup() {
