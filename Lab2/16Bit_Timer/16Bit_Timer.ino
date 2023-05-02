@@ -11,37 +11,48 @@
 
 void bit_set_portH(int bit, bool set);
 
+unsigned long time = millis();
+
 
 void setup() {
   // put your setup code here, to run once:
 
 
-  //Setting PH3/OCR4A to output
-  //DDRH |= 1<<3;
-  pinMode(6, OUTPUT);
+  //Setting PH3/OCR4A to output mode
+  DDRH |= 1<<3;
+  
 
 
   //Set Power Reduction Reg to 0;
+  TIMER_4 = 0;
 
-  //TCNT4 = 0;
   TIMER_4_CONTROL_A = 0;
   TIMER_4_CONTROL_B = 0;
 
 
   //Enabling timer
   //TIMER_4_ONBIT |= 1<<4;
-  TIMER_4_ONBIT &= !(1<<4);
+  TIMER_4_ONBIT &= ~(1<<4);
 
+  // 800hz is 38.0625
+  // 400hz  77.125
+  // 250hz is 124
+  //TIMER_4_COMP_COUNT = 124;
 
-  TIMER_4_COMP_COUNT = 249;
-
-  
+  //31249
 
   //Sets the on compare match
   //Setting the prescalar to clk/256, and clock to CTC mode
   TIMER_4_CONTROL_A |= 1<<COM4A0;
+  //TIMER_4_CONTROL_A |= 1<<COM4A1;
+
   
+  //TIMER_4_CONTROL_A |= 1 << WGM40;
+  //TIMER_4_CONTROL_A |= 1 << WGM41;
   TIMER_4_CONTROL_B |= 1 << WGM42;
+  //TIMER_4_CONTROL_B |= 1 << WGM43;
+  
+
   TIMER_4_CONTROL_B |= 1 << CS42;
 
   //Setting compare count
@@ -56,23 +67,38 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //TIMER_4_COMP_COUNT = 155.25;
-  // bit_set_portH(3, true);
-  // delay(2);
-  // bit_set_portH(3, false);
-  // delay(2);
-  // //bit_set_portH(3, false);
+  // unsigned long timeNow = millis();
+  // if(timeNow - time < 2000){
+  //   TIMER_4_COMP_COUNT = 77.125;
+  // }
+  // else if(timeNow - time < 4000){
+  //   TIMER_4_COMP_COUNT = 124;
+  // }
+  // else if(timeNow - time < 6000){
+  //   TIMER_4_COMP_COUNT = 38.0625;
+  // }
+  // else{
+  //   time = millis();
+  // }
+
+  TIMER_4_COMP_COUNT = 77.125;
+  delay(1000);
+  TIMER_4_COMP_COUNT = 124;
+  delay(1000);
+  TIMER_4_COMP_COUNT = 0;
+  TIMER_4_COMP_COUNT = 38;
+  delay(1000);
+  TIMER_4_COMP_COUNT = 0;
+  delay(1000);
+
+
+  // //delay(250);
   // TIMER_4_COMP_COUNT = 249;
-  // //bit_set_portH(3, true);
-  // delay(1000);
+  // //delay(250);
   // TIMER_4_COMP_COUNT = 77.125;
-  // //bit_set_portH(3, true);
-  // delay(1000);
+  // //delay(250);
   // TIMER_4_COMP_COUNT = 0;
-  // //bit_set_portH(3, true);
-  // delay(1000);
-
-
+  // //delay(250);
 
 }
 
