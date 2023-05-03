@@ -11,7 +11,8 @@
 #define X_INPUT A0
 #define Y_INPUT A1
 #define STICK_POWER 6
-#define PUSH_BUTTON 2
+#define PUSH_BUTTON 7
+#define MOTOR_ON 3
 
 //Transfers 1 SPI command to LED Matrix for given row
 //Input: row - row in LED matrix
@@ -27,7 +28,6 @@ int CLK = 10;
 
 int directions[2];
 
-
 byte spidata[2]; //spi shift register uses 16 bits, 8 for ctrl and 8 for data
 
 void setup(){
@@ -38,6 +38,7 @@ void setup(){
   pinMode(CS, OUTPUT);
   pinMode(CLK, OUTPUT);
 
+  pinMode(MOTOR_ON, OUTPUT);
   pinMode(STICK_POWER, OUTPUT);
   pinMode(PUSH_BUTTON, INPUT);
   pinMode(X_INPUT, INPUT);
@@ -60,9 +61,12 @@ void loop(){
   getJoystick();
   int x = directions[0];
   int y = directions[1];
+  // Serial.println(x);
+  // Serial.println(y);
   setClearPixel(y, x, true);
   delay(5);
   setClearPixel(y, x, false);
+
 }
 
 void spiTransfer(volatile byte opcode, volatile byte data){
@@ -95,6 +99,8 @@ void setClearPixel(int row, int col, bool set){
 }
 
 void getJoystick(){
+  Serial.println(analogRead(X_INPUT) * 7 / 1023);
+  Serial.println(analogRead(Y_INPUT) * 7 / 1023);
   directions[0] = (analogRead(X_INPUT) * 7 / 1023);
   directions[1] = (analogRead(Y_INPUT) * 7 / 1023);
 }
