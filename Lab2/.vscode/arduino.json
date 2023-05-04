@@ -1,0 +1,6 @@
+{
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega",
+    "sketch": "Task2_NC\\Task2_NC.ino",
+    "port": "COM5"
+}
