@@ -43,7 +43,7 @@ void setup() {
 
   //Sets the on compare match
   //Setting the prescalar to clk/256, and clock to CTC mode
-  TIMER_4_CONTROL_A |= 1<<COM4A0;
+  TIMER_4_CONTROL_A |= 1 << COM4A0;
   //TIMER_4_CONTROL_A |= 1<<COM4A1;
 
   
@@ -83,6 +83,7 @@ void loop() {
 
   TIMER_4_COMP_COUNT = 77.125;
   delay(1000);
+  TIMER_4_COMP_COUNT = 0;
   TIMER_4_COMP_COUNT = 124;
   delay(1000);
   TIMER_4_COMP_COUNT = 0;
