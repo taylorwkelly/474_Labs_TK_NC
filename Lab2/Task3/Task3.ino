@@ -7,6 +7,11 @@
 #define TIMER_4_CONTROL_C TCCR4C //Force outputcompare
 #define TIMER_4_COMP_COUNT OCR4A  //Only Need this one for the output
 
+#define REDLED PL2 //DDRL bit 6
+#define GREENLED PL1 //DDRL bit 7
+#define BLUELED PL0 //DDRL bit 0
+#define BITSHIFT_LED 7<<5;
+
 #define TIMER_4_INPUT_CAPTURE PL0
 
 void bit_set_portH(int bit, bool set);
@@ -20,6 +25,7 @@ void setup() {
 
   //Setting PH3/OCR4A to output mode
   DDRH |= 1<<3;
+  DDRL |= BITSHIFT_LED;
   
 
 
@@ -43,7 +49,7 @@ void setup() {
 
   //Sets the on compare match
   //Setting the prescalar to clk/256, and clock to CTC mode
-  TIMER_4_CONTROL_A |= 1 << COM4A0;
+  TIMER_4_CONTROL_A |= 1<<COM4A0;
   //TIMER_4_CONTROL_A |= 1<<COM4A1;
 
   
@@ -62,7 +68,9 @@ void setup() {
 
 
 void loop() {
-  task_b();
+  // task_a();
+  // task_b();
+  task_c();
   delay(1);
 
 }
@@ -78,6 +86,32 @@ void bit_set_portH(int bit, bool set){
 
 }
 
+void run_function(void (*functPTR)()){
+  functPTR();
+}
+
+void task_a(){
+  static int time;
+  if(time == 0){
+    PORTL |= 1<<2;
+  }
+
+  time++;
+
+  if(time == 333){
+    PORTL &= !(1<<2);
+    PORTL |= 1<<1;
+  }
+  if(time == 666){
+    PORTL &= !(1<<1);
+    PORTL |= 1;
+  }
+  if(time == 1000){
+    PORTL &= !(1);
+    time = 0;
+  }
+  return;
+}
 void task_b(){
   static int time;
   if(time == 0){  //400 hz
@@ -102,6 +136,24 @@ void task_b(){
   if(time == 4000){
     time = 0;
   }
-  
+  return;
+}
+
+void task_c(){
+  static int time;
+  if(time == 0){
+    run_function(task_a);
+  }
+  time++;
+  // if(time == 2000){
+  //   task_b();
+  // }
+  // // if(time == 6000){
+    
+  // // }
+  if(time == 7000){
+    time = 0;
+  }
+  return;
 }
 
