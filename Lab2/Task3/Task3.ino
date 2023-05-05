@@ -10,7 +10,7 @@
 #define REDLED PL2 //DDRL bit 6
 #define GREENLED PL1 //DDRL bit 7
 #define BLUELED PL0 //DDRL bit 0
-#define BITSHIFT_LED 7<<5;
+#define BITSHIFT_LED 7<<5; // 00000111 -> 11100000
 
 #define TIMER_4_INPUT_CAPTURE PL0
 
