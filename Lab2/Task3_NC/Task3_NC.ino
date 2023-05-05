@@ -53,13 +53,13 @@ void TaskB() {
     stimeB = millis();
     while (millis() - stimeB < 4000) {
         unsigned long currTime = millis() - stimeB;
-        if (currTime % 4000 < 1000) {
+        if (currTime == 1000) {
             TIMER_4_TOP = 0;
             TIMER_4_TOP = HZ400;
-        } else if (currTime % 4000 < 2000) {
+        } else if (currTime == 2000) {
             TIMER_4_TOP = 0;
             TIMER_4_TOP = HZ250;
-        } else if (currTime% 4000 < 3000) {
+        } else if (currTime == 3000) {
             TIMER_4_TOP = 0;
             TIMER_4_TOP = HZ800;
         } else {
@@ -69,5 +69,29 @@ void TaskB() {
 }
 
 void TaskC() {
-
+    stimeC = millis();
+    while (millis() - stimeC < 12000) {
+        unsigned long currTime = millis() - stimeC;
+        if (currTime % 1000 < 333) {
+            LED_PORT |= BIT2;
+            LED_PORT &= ~BIT0;
+        }
+        else if (currTime % 1000 < 666) {
+            LED_PORT |= BIT1;
+            LED_PORT &= ~BIT2;
+        }
+        else if (currTime % 1000 < 999) {
+            LED_PORT |= BIT0;
+            LED_PORT &= ~BIT1;
+        } 
+        if (currTime % 4000 < 1000) {
+            TIMER_4_TOP = HZ400;
+        } else if (currTime % 4000 < 2000) {
+            TIMER_4_TOP = HZ250;
+        } else if (currTime % 4000 < 3000) {
+            TIMER_4_TOP = HZ800;
+        } else {
+            TIMER_4_TOP = 0;
+        }
+    }
 }
