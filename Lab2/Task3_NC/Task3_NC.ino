@@ -5,8 +5,7 @@
 unsigned long stimeA;
 unsigned long stimeB;
 unsigned long stimeC;
-
-uint8_t taskStatusFlags;
+unsigned int sound_index;
 
 void setup() {
     // SET LEDS and SPKR pins to OUTPUT mode
@@ -22,12 +21,14 @@ void setup() {
     // Also prescale the clock to clk/256
     TIMER_4_CTRL_REG_A |= TIMER_4_CTRL_REG_A_MASK;
     TIMER_4_CTRL_REG_B |= TIMER_4_CTRL_REG_B_MASK;
+
+    sound_index = 0;
 }
 
 void loop() {
     TaskA();
-    TaskB();
-
+    TaskBV2();
+    TaskC();
 }
 
 void TaskA() {
@@ -53,19 +54,32 @@ void TaskB() {
     stimeB = millis();
     while (millis() - stimeB < 4000) {
         unsigned long currTime = millis() - stimeB;
-        if (currTime == 1000) {
-            TIMER_4_TOP = 0;
+        if (currTime < 1000) {
             TIMER_4_TOP = HZ400;
-        } else if (currTime == 2000) {
-            TIMER_4_TOP = 0;
+        } else if (currTime < 2000) {
             TIMER_4_TOP = HZ250;
-        } else if (currTime == 3000) {
-            TIMER_4_TOP = 0;
+        } else if (currTime < 3000) {
             TIMER_4_TOP = HZ800;
         } else {
             TIMER_4_TOP = 0;
         }
     }
+    TIMER_4_TOP = 0;
+}
+
+void TaskBV2() { 
+    stimeB = millis();
+    while (millis() - stimeB < 100000) {
+        unsigned long currTime = millis() - stimeB;
+        if (sound_index == 52) {
+            sound_index = 0;
+        }
+        if (currTime % 500 == 0) {
+            TIMER_4_TOP = melody[sound_index];
+            sound_index++;
+        }
+    }
+    TIMER_4_TOP = 0;
 }
 
 void TaskC() {

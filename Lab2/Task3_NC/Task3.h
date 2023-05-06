@@ -29,16 +29,16 @@
 void TaskA();
 void TaskB();
 void TaskC();
+void TaskBV2();
 
-// prescaler at 8
-#define NOTE_c 3830 // 261 Hz
-#define NOTE_d 3400 // 294 Hz
-#define NOTE_e 3038 // 329 Hz
-#define NOTE_f 2864 // 349 Hz
-#define NOTE_g 2550 // 392 Hz
-#define NOTE_a 2272 // 440 Hz
-#define NOTE_b 2028 // 493 Hz
-#define NOTE_C 1912 // 523 Hz
+#define NOTE_c 478.75 //3830 // 261 Hz
+#define NOTE_d 425 //3400 // 294 Hz
+#define NOTE_e 379.75 //3038 // 329 Hz
+#define NOTE_f 358 //2864 // 349 Hz
+#define NOTE_g 318.75 //2550 // 392 Hz
+#define NOTE_a 284 //2272 // 440 Hz
+#define NOTE_b 253.5 //2028 // 493 Hz
+#define NOTE_C 239 //1912 // 523 Hz
 #define NOTE_R 0
 
 int melody[] = { NOTE_e, NOTE_R, NOTE_d, NOTE_R, NOTE_c, NOTE_R, NOTE_d, NOTE_R, NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_d, NOTE_R,NOTE_d, NOTE_R,NOTE_d, NOTE_R,NOTE_e, NOTE_R,NOTE_g,
