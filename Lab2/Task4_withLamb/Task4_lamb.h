@@ -26,15 +26,6 @@
 #define HZ400 312.75
 #define HZ800 156.325
 
-void TaskA();
-void TaskB();
-void TaskC();
-void TaskBV2();
-void TaskCV2();
-void JoystickTask();
-
-void scheduler1();
-void scheduler2();
 void scheduler3();
 
 void JoystickTask_sched();

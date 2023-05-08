@@ -1,6 +1,5 @@
 #include "Task4_lamb.h";
 
-
 #define OP_DECODEMODE  8
 #define OP_SCANLIMIT   10
 #define OP_SHUTDOWN    11
@@ -24,18 +23,6 @@ unsigned int sound_index;
 int directions[2]; // Holds the last read data for the x, y directions
 
 byte spidata[2]; //spi shift register uses 16 bits, 8 for ctrl and 8 for data
-
-
-//Transfers 1 SPI command to LED Matrix for given row
-//Input: row - row in LED matrix
-//       data - bit representation of LEDs in a given row; 1 indicates ON, 0 indicates OFF
-void spiTransfer(volatile byte row, volatile byte data);
-
-// Uses the spiTransfer function in order to set or clear a pixel in a given location
-//Input: row - row in LED matrix
-//       col - column in LED matrix
-//       set - true to turn pixel on, false to turn off pixel
-void setClearPixel(int row, int col, bool set);
 
 void setup() {
     set_stick = true;
@@ -76,161 +63,17 @@ void setup() {
     for(int i = 0; i < 8; i++){
       spiTransfer(i, 0b00000000);
     }
-
-
 }
 
+// Calls the scheduler function to execute the Joystick and Mary
+// Had a Little Lamb Tasks, tehn synchronizes it.
 void loop() {
-    //scheduler1();
-    //scheduler2();
     scheduler3();
     delay(1);
 }
 
-void TaskA() {
-    stimeA = millis();
-    while (millis() - stimeA < 1000) {
-        unsigned long currTime = (millis() - stimeA);
-        if (currTime < 333) {
-            LED_PORT |= BIT2;
-            LED_PORT &= ~BIT0;
-        }
-        else if (currTime < 666) {
-            LED_PORT |= BIT1;
-            LED_PORT &= ~BIT2;
-        }
-        else if (currTime  < 999) {
-            LED_PORT |= BIT0;
-            LED_PORT &= ~BIT1;
-        } 
-    }
-}
-
-void TaskB() {
-    stimeB = millis();
-    while (millis() - stimeB < 4000) {
-        unsigned long currTime = millis() - stimeB;
-        if (currTime < 1000) {
-            TIMER_4_TOP = HZ400;
-        } else if (currTime < 2000) {
-            TIMER_4_TOP = HZ250;
-        } else if (currTime < 3000) {
-            TIMER_4_TOP = HZ800;
-        } else {
-            TIMER_4_TOP = 0;
-        }
-    }
-    TIMER_4_TOP = 0;
-}
-
-void TaskBV2() { 
-    stimeB = millis();
-    unsigned long stepTime = stimeB;
-    sound_index = 0;
-    while (millis() - stimeB < 12000) {
-        unsigned long currTime = millis() - stepTime;
-        if (sound_index == 52) sound_index = 0;
-        if (currTime > 230) {
-            TIMER_4_TOP = melody[sound_index++];
-            stepTime = millis();
-        }
-    }
-    TIMER_4_TOP = 0;
-}
-
-void TaskC() {
-    stimeC = millis();
-    while (millis() - stimeC < 12000) {
-        unsigned long currTime = millis() - stimeC;
-        if (currTime % 1000 < 333) {
-            LED_PORT |= BIT2;
-            LED_PORT &= ~BIT0;
-        }
-        else if (currTime % 1000 < 666) {
-            LED_PORT |= BIT1;
-            LED_PORT &= ~BIT2;
-        }
-        else if (currTime % 1000 < 999) {
-            LED_PORT |= BIT0;
-            LED_PORT &= ~BIT1;
-        } 
-        if (currTime % 4000 < 1000) {
-            TIMER_4_TOP = HZ400;
-        } else if (currTime % 4000 < 2000) {
-            TIMER_4_TOP = HZ250;
-        } else if (currTime % 4000 < 3000) {
-            TIMER_4_TOP = HZ800;
-        } else {
-            TIMER_4_TOP = 0;
-        }
-    }
-}
-
-void TaskCV2() {
-    stimeC = millis();
-    unsigned long stepTime = stimeC;
-    sound_index = 0;
-    while (millis() - stimeC < 12000) {
-        unsigned long currTime = (millis() - stimeC);
-        unsigned long songTime = (millis() - stepTime);
-        if (currTime % 1000 < 333) {
-            LED_PORT |= BIT2;
-            LED_PORT &= ~BIT0;
-        }
-        else if (currTime % 1000 < 666) {
-            LED_PORT |= BIT1;
-            LED_PORT &= ~BIT2;
-        }
-        else if (currTime % 1000 < 999) {
-            LED_PORT |= BIT0;
-            LED_PORT &= ~BIT1;
-        } 
-        if (sound_index == 52) sound_index = 0;
-        if (songTime > 230) {
-            TIMER_4_TOP = melody[sound_index++];
-            stepTime = millis();
-        }
-    }
-    TIMER_4_TOP = 0;
-}
-
-void JoystickTask(){
-  joystickTime = millis();
-  unsigned long joyStop = joystickTime;
-  bool set = true;
-  getJoystick(set);
-  while(millis() - joystickTime < 10000){
-    unsigned long currTime = millis() - joyStop;
-    if(set){
-      getJoystick(set);
-      set = false;
-    }
-    if(currTime < 50){
-      setClearPixel(directions[1], directions[0], true);
-    }
-    else{
-      setClearPixel(directions[1], directions[0], false);
-      set = true;
-      joyStop = millis();
-    }
-  }
-}
-
-void scheduler1() {
-    TaskA();
-    TaskB();
-    TaskC();
-}
-
-void scheduler2() {
-    TaskA();
-    TaskBV2();
-    TaskCV2();
-}
-
 void scheduler3(){
   JoystickTask_sched();
-  //JoystickTask();
   TaskBV2_sched();
 }
 
