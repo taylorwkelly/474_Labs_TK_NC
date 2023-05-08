@@ -1,7 +1,8 @@
-///*
-// * Written by Ishaan Bhimani 
-// * 
-// */
+/*
+Taylor Kelly and Noah Crouch
+CSE 474
+05/08/2023
+*/
 
 #define OP_DECODEMODE  8
 #define OP_SCANLIMIT   10
@@ -11,20 +12,22 @@
 #define X_INPUT A0
 #define Y_INPUT A1
 #define STICK_POWER 6
-#define PUSH_BUTTON 7
 #define MOTOR_ON 3
+#define DIN 12
+#define CS 11
+#define CLK 10
 
 //Transfers 1 SPI command to LED Matrix for given row
 //Input: row - row in LED matrix
 //       data - bit representation of LEDs in a given row; 1 indicates ON, 0 indicates OFF
 void spiTransfer(volatile byte row, volatile byte data);
+
+// Uses the spiTransfer function in order to set or clear a pixel in a given location
+//Input: row - row in LED matrix
+//       col - column in LED matrix
+//       set - true to turn pixel on, false to turn off pixel
 void setClearPixel(int row, int col, bool set);
 
-
-// change these pins as necessary
-int DIN = 12;
-int CS =  11;
-int CLK = 10;
 
 int directions[2];
 
@@ -40,11 +43,10 @@ void setup(){
 
   pinMode(MOTOR_ON, OUTPUT);
   pinMode(STICK_POWER, OUTPUT);
-  pinMode(PUSH_BUTTON, INPUT);
   pinMode(X_INPUT, INPUT);
   pinMode(Y_INPUT, INPUT);
 
-  digitalWrite(STICK_POWER, HIGH);
+  //digitalWrite(STICK_POWER, HIGH);
   digitalWrite(CS, HIGH);
 
   spiTransfer(OP_DISPLAYTEST,0);
@@ -61,10 +63,8 @@ void loop(){
   getJoystick();
   int x = directions[0];
   int y = directions[1];
-  // Serial.println(x);
-  // Serial.println(y);
   setClearPixel(y, x, true);
-  delay(5);
+  delay(50);
   setClearPixel(y, x, false);
 
 }
@@ -99,8 +99,6 @@ void setClearPixel(int row, int col, bool set){
 }
 
 void getJoystick(){
-  Serial.println(analogRead(X_INPUT) * 7 / 1023);
-  Serial.println(analogRead(Y_INPUT) * 7 / 1023);
-  directions[0] = (analogRead(X_INPUT) * 7 / 1023);
-  directions[1] = (analogRead(Y_INPUT) * 7 / 1023);
+  directions[0] = (analogRead(X_INPUT) * 8 / 1023);
+  directions[1] = (analogRead(Y_INPUT) * 8 / 1023);
 }
