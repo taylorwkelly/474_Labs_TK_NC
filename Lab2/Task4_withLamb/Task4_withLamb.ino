@@ -1,4 +1,4 @@
-#include "Task3.h";
+#include "Task4_lamb.h";
 
 
 #define OP_DECODEMODE  8
@@ -14,11 +14,11 @@
 #define CS 11
 #define CLK 10
 
-
+bool set_stick;
 unsigned long stimeA;
 unsigned long stimeB;
 unsigned long stimeC;
-//unsigned long joystickTime;
+unsigned long joystickTime;
 unsigned int sound_index;
 
 int directions[2]; // Holds the last read data for the x, y directions
@@ -38,9 +38,24 @@ void spiTransfer(volatile byte row, volatile byte data);
 void setClearPixel(int row, int col, bool set);
 
 void setup() {
-    Serial.begin(9600);
+    set_stick = true;
+    sound_index = 0;
 
-    //must do this setup
+    // SET LEDS and SPKR pins to OUTPUT mode
+    DATA_DIRECTION_REG_LEDS |= LEDSETMASK;
+    DATA_DIRECTION_REG_SPKR |= BIT3;
+    // ALLOW the timer
+    TIMER_4_ALLOW_REG &= ~BIT3;
+
+    // Set the top to 0 for now
+    TIMER_4_TOP = 0;
+
+    // SET the FAST PWM MODE as well as allow OC4A to override pin
+    // Also prescale the clock to clk/256
+    TIMER_4_CTRL_REG_A |= TIMER_4_CTRL_REG_A_MASK;
+    TIMER_4_CTRL_REG_B |= TIMER_4_CTRL_REG_B_MASK;
+
+    //must do this setup for the joystick
     pinMode(DIN, OUTPUT);
     pinMode(CS, OUTPUT);
     pinMode(CLK, OUTPUT);
@@ -62,29 +77,13 @@ void setup() {
       spiTransfer(i, 0b00000000);
     }
 
-    // SET LEDS and SPKR pins to OUTPUT mode
-    DATA_DIRECTION_REG_LEDS |= LEDSETMASK;
-    DATA_DIRECTION_REG_SPKR |= BIT3;
-    // ALLOW the timer
-    TIMER_4_ALLOW_REG &= ~BIT3;
 
-    // Set the top to 0 for now
-    TIMER_4_TOP = 0;
-
-    // SET the FAST PWM MODE as well as allow OC4A to override pin
-    // Also prescale the clock to clk/256
-    TIMER_4_CTRL_REG_A |= TIMER_4_CTRL_REG_A_MASK;
-    TIMER_4_CTRL_REG_B |= TIMER_4_CTRL_REG_B_MASK;
-
-    sound_index = 0;
-    //getJoystick();
 }
 
 void loop() {
-    //TaskA();
-    //TaskBV2();
-    //TaskC();
-    JoystickTask();
+    //scheduler1();
+    //scheduler2();
+    scheduler3();
     //delay(1);
 }
 
@@ -126,14 +125,14 @@ void TaskB() {
 
 void TaskBV2() { 
     stimeB = millis();
-    while (millis() - stimeB < 100000) {
-        unsigned long currTime = millis() - stimeB;
-        if (sound_index == 52) {
-            sound_index = 0;
-        }
-        if (currTime % 500 == 0) {
-            TIMER_4_TOP = melody[sound_index];
-            sound_index++;
+    unsigned long stepTime = stimeB;
+    sound_index = 0;
+    while (millis() - stimeB < 12000) {
+        unsigned long currTime = millis() - stepTime;
+        if (sound_index == 52) sound_index = 0;
+        if (currTime > 230) {
+            TIMER_4_TOP = melody[sound_index++];
+            stepTime = millis();
         }
     }
     TIMER_4_TOP = 0;
@@ -165,7 +164,74 @@ void TaskC() {
             TIMER_4_TOP = 0;
         }
     }
-    //return;    
+}
+
+void TaskCV2() {
+    stimeC = millis();
+    unsigned long stepTime = stimeC;
+    sound_index = 0;
+    while (millis() - stimeC < 12000) {
+        unsigned long currTime = (millis() - stimeC);
+        unsigned long songTime = (millis() - stepTime);
+        if (currTime % 1000 < 333) {
+            LED_PORT |= BIT2;
+            LED_PORT &= ~BIT0;
+        }
+        else if (currTime % 1000 < 666) {
+            LED_PORT |= BIT1;
+            LED_PORT &= ~BIT2;
+        }
+        else if (currTime % 1000 < 999) {
+            LED_PORT |= BIT0;
+            LED_PORT &= ~BIT1;
+        } 
+        if (sound_index == 52) sound_index = 0;
+        if (songTime > 230) {
+            TIMER_4_TOP = melody[sound_index++];
+            stepTime = millis();
+        }
+    }
+    TIMER_4_TOP = 0;
+}
+
+void JoystickTask(){
+  joystickTime = millis();
+  unsigned long joyStop = joystickTime;
+  bool set = true;
+  getJoystick(set);
+  while(millis() - joystickTime < 10000){
+    unsigned long currTime = millis() - joyStop;
+    if(set){
+      getJoystick(set);
+      set = false;
+    }
+    if(currTime < 50){
+      setClearPixel(directions[1], directions[0], true);
+    }
+    else{
+      setClearPixel(directions[1], directions[0], false);
+      set = true;
+      joyStop = millis();
+    }
+  }
+}
+
+void scheduler1() {
+    TaskA();
+    TaskB();
+    TaskC();
+}
+
+void scheduler2() {
+    TaskA();
+    TaskBV2();
+    TaskCV2();
+}
+
+void scheduler3(){
+  JoystickTask_sched();
+  //JoystickTask();
+  TaskBV2_sched();
 }
 
 void spiTransfer(volatile byte opcode, volatile byte data){
@@ -184,8 +250,6 @@ void spiTransfer(volatile byte opcode, volatile byte data){
   digitalWrite(CS,HIGH);
 }
 
-
-
 void setClearPixel(int row, int col, bool set){
   col = 7-col;
   int select = 1<<col;  
@@ -197,21 +261,44 @@ void setClearPixel(int row, int col, bool set){
   }  
 }
 
-void getJoystick(){
-  directions[0] = (int) (analogRead(X_INPUT) * 8 / 1024);
-  directions[1] = (int) (analogRead(Y_INPUT) * 8 / 1024);
+void getJoystick(bool set){
+  if(set){
+    directions[0] = (int) (analogRead(X_INPUT) * 8 / 1024);
+    directions[1] = (int) (analogRead(Y_INPUT) * 8 / 1024);
+  }
+  else return;
 }
 
-void JoystickTask(){
+
+
+void JoystickTask_sched(){
   static int joystickTime;
   joystickTime++;
-  if(joystickTime == 5){
-    getJoystick();
+  getJoystick(set_stick);
+  if(joystickTime == 1){
+    //getJoystick(set_stick);
     setClearPixel(directions[1], directions[0], true);
+    set_stick = false;
   }
-  if(joystickTime == 10){
+  if(joystickTime == 50){
     setClearPixel(directions[1], directions[0], false);
     joystickTime = 0;
+    set_stick = true;
   }
-  return;
+}
+
+void TaskBV2_sched(){ 
+    static int lamb_time;
+    //static int step_time;
+    //sound_index = 0;
+    lamb_time++;
+    if (sound_index == 52){
+      sound_index = 0;
+      TIMER_4_TOP = 0;
+    }
+
+    if(lamb_time == 230){
+      TIMER_4_TOP = melody[sound_index++];
+      lamb_time = 0;
+    }
 }

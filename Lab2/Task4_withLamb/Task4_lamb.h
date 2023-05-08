@@ -30,6 +30,27 @@ void TaskA();
 void TaskB();
 void TaskC();
 void TaskBV2();
+void TaskCV2();
+void JoystickTask();
+
+void scheduler1();
+void scheduler2();
+void scheduler3();
+
+void JoystickTask_sched();
+void TaskBV2();
+
+//Transfers 1 SPI command to LED Matrix for given row
+//Input: row - row in LED matrix
+//       data - bit representation of LEDs in a given row; 1 indicates ON, 0 indicates OFF
+void spiTransfer(volatile byte opcode, volatile byte data);
+
+// Uses the spiTransfer function in order to set or clear a pixel in a given location
+//Input: row - row in LED matrix
+//       col - column in LED matrix
+//       set - true to turn pixel on, false to turn off pixel
+void setClearPixel(int row, int col, bool set);
+void getJoystick(bool set);
 
 #define NOTE_c 478.75 //3830 // 261 Hz
 #define NOTE_d 425 //3400 // 294 Hz
@@ -41,5 +62,5 @@ void TaskBV2();
 #define NOTE_C 239 //1912 // 523 Hz
 #define NOTE_R 0
 
-int melody[] = { NOTE_e, NOTE_R, NOTE_d, NOTE_R, NOTE_c, NOTE_R, NOTE_d, NOTE_R, NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_d, NOTE_R,NOTE_d, NOTE_R,NOTE_d, NOTE_R,NOTE_e, NOTE_R,NOTE_g,
+float melody[] = { NOTE_e, NOTE_R, NOTE_d, NOTE_R, NOTE_c, NOTE_R, NOTE_d, NOTE_R, NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_d, NOTE_R,NOTE_d, NOTE_R,NOTE_d, NOTE_R,NOTE_e, NOTE_R,NOTE_g,
 NOTE_R,NOTE_g, NOTE_R,NOTE_e, NOTE_R,NOTE_d, NOTE_R,NOTE_c, NOTE_R,NOTE_d, NOTE_R,NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_e, NOTE_R,NOTE_d, NOTE_R,NOTE_d, NOTE_R,NOTE_e, NOTE_R,NOTE_d, NOTE_R,NOTE_c, NOTE_R,NOTE_c };
