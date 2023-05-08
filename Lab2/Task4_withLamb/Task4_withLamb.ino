@@ -250,9 +250,13 @@ void spiTransfer(volatile byte opcode, volatile byte data){
   digitalWrite(CS,HIGH);
 }
 
+// 8 rows, 0-7
 void setClearPixel(int row, int col, bool set){
+  // gets the bitshift for the column
+  // Onboard: col 0 is fully right, col 7 is fully left
   col = 7-col;
-  int select = 1<<col;  
+  int select = 1<<col;
+  // Set determines whether to write or clear pixel
   if(set){
     spiTransfer(row, select);
   } else{
@@ -261,6 +265,7 @@ void setClearPixel(int row, int col, bool set){
   }  
 }
 
+// goes [x, y] like coordinate system
 void getJoystick(bool set){
   if(set){
     directions[0] = (int) (analogRead(X_INPUT) * 8 / 1024);
@@ -268,8 +273,6 @@ void getJoystick(bool set){
   }
   else return;
 }
-
-
 
 void JoystickTask_sched(){
   static int joystickTime;
