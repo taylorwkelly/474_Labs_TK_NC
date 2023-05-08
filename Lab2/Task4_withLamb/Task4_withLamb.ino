@@ -84,7 +84,7 @@ void loop() {
     //scheduler1();
     //scheduler2();
     scheduler3();
-    //delay(1);
+    delay(1);
 }
 
 void TaskA() {
