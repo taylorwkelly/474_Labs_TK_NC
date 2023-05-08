@@ -22,13 +22,11 @@ void setup() {
     TIMER_4_CTRL_REG_A |= TIMER_4_CTRL_REG_A_MASK;
     TIMER_4_CTRL_REG_B |= TIMER_4_CTRL_REG_B_MASK;
 
-    sound_index = 0;
 }
 
 void loop() {
-    TaskA();
-    TaskBV2();
-    TaskC();
+    scheduler1();
+    scheduler2();
 }
 
 void TaskA() {
@@ -69,14 +67,14 @@ void TaskB() {
 
 void TaskBV2() { 
     stimeB = millis();
-    while (millis() - stimeB < 100000) {
-        unsigned long currTime = millis() - stimeB;
-        if (sound_index == 52) {
-            sound_index = 0;
-        }
-        if (currTime % 500 == 0) {
-            TIMER_4_TOP = melody[sound_index];
-            sound_index++;
+    unsigned long stepTime = stimeB;
+    sound_index = 0;
+    while (millis() - stimeB < 12000) {
+        unsigned long currTime = millis() - stepTime;
+        if (sound_index == 52) sound_index = 0;
+        if (currTime > 230) {
+            TIMER_4_TOP = melody[sound_index++];
+            stepTime = millis();
         }
     }
     TIMER_4_TOP = 0;
@@ -108,4 +106,44 @@ void TaskC() {
             TIMER_4_TOP = 0;
         }
     }
+}
+
+void TaskCV2() {
+    stimeC = millis();
+    unsigned long stepTime = stimeC;
+    sound_index = 0;
+    while (millis() - stimeC < 12000) {
+        unsigned long currTime = (millis() - stimeC);
+        unsigned long songTime = (millis() - stepTime);
+        if (currTime % 1000 < 333) {
+            LED_PORT |= BIT2;
+            LED_PORT &= ~BIT0;
+        }
+        else if (currTime % 1000 < 666) {
+            LED_PORT |= BIT1;
+            LED_PORT &= ~BIT2;
+        }
+        else if (currTime % 1000 < 999) {
+            LED_PORT |= BIT0;
+            LED_PORT &= ~BIT1;
+        } 
+        if (sound_index == 52) sound_index = 0;
+        if (songTime > 230) {
+            TIMER_4_TOP = melody[sound_index++];
+            stepTime = millis();
+        }
+    }
+    TIMER_4_TOP = 0;
+}
+
+void scheduler1() {
+    TaskA();
+    TaskB();
+    TaskC();
+}
+
+void scheduler2() {
+    TaskA();
+    TaskBV2();
+    TaskCV2();
 }
