@@ -13,9 +13,9 @@ CSE 474
 #define Y_INPUT A1
 #define STICK_POWER 6
 #define MOTOR_ON 3
-#define DIN = 12;
-#define CS =  11;
-#define CLK = 10;
+#define DIN 12
+#define CS 11
+#define CLK 10
 
 //Transfers 1 SPI command to LED Matrix for given row
 //Input: row - row in LED matrix
