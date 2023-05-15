@@ -15,58 +15,43 @@ unsigned long time = millis();
 
 
 void setup() {
-  // put your setup code here, to run once:
-
-
   //Setting PH3/OCR4A to output mode
   DDRH |= 1<<3;
   
-
-
   //Set Power Reduction Reg to 0;
   TIMER_4 = 0;
 
+  //Initializes Control registers
   TIMER_4_CONTROL_A = 0;
   TIMER_4_CONTROL_B = 0;
 
 
   //Enabling timer
-  //TIMER_4_ONBIT |= 1<<4;
   TIMER_4_ONBIT &= ~(1<<4);
 
   // 800hz is 38.0625
   // 400hz  77.125
   // 250hz is 124
-  //TIMER_4_COMP_COUNT = 124;
-
-  //31249
 
   //Sets the on compare match
   //Setting the prescalar to clk/256, and clock to CTC mode
   TIMER_4_CONTROL_A |= 1 << COM4A0;
   //TIMER_4_CONTROL_A |= 1<<COM4A1;
 
-  
   //TIMER_4_CONTROL_A |= 1 << WGM40;
   //TIMER_4_CONTROL_A |= 1 << WGM41;
   TIMER_4_CONTROL_B |= 1 << WGM42;
   //TIMER_4_CONTROL_B |= 1 << WGM43;
   
-
   TIMER_4_CONTROL_B |= 1 << CS42;
-
-  //TIMSK4 |= 1<<OCIE4A;
-  //interrupts();
   
 }
-
 
 void loop() {
   task_b();
   delay(1);
 
 }
-
 
 void bit_set_portH(int bit, bool set){
   if(set){
@@ -75,7 +60,6 @@ void bit_set_portH(int bit, bool set){
   else{
     PORTH &= !(1<<bit);
   }
-
 }
 
 void task_b(){
@@ -84,7 +68,6 @@ void task_b(){
     TIMER_4 = 0;
     TIMER_4_COMP_COUNT = 77.125;
   }
-
   time++;
 
   if(time == 1000){ //250 hz
@@ -104,4 +87,3 @@ void task_b(){
   }
   
 }
-
