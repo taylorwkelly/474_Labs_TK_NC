@@ -12,20 +12,5 @@
 #define HALTED 2
 #define SLEEPING 3
 
-typedef struct Task
-{
-    unsigned int status;
-    (void)(*function)(void);
-    unsigned int sleepCounter;
-    unsigned int delayCounter;
-    unsigned int deadlineUS;
-};
-
-typedef struct Scheduler
-{
-    struct Task tasks[];
-    unsigned int numTasks;
-};
-
 
 int compare(int, int);
