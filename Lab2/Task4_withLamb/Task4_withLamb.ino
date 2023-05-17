@@ -1,3 +1,15 @@
+/* University of Washington
+ * ECE/CSE 474,  05/08/2023
+ *
+ *   Noah Crouch
+ *   Taylor Kelly
+ *
+ *   Lab2: Digital I/O and Timers
+ *
+ *   Acknowledgments:   Source code for the spiTransfer courtesy 
+ *                      of Ishaan Bhimani 
+ */
+
 #include "Task4_lamb.h";
 
 #define OP_DECODEMODE  8
@@ -23,6 +35,7 @@ unsigned int sound_index;
 int directions[2]; // Holds the last read data for the x, y directions
 
 byte spidata[2]; //spi shift register uses 16 bits, 8 for ctrl and 8 for data
+
 
 void setup() {
     set_stick = true;
