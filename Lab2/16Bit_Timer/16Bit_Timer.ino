@@ -9,12 +9,10 @@
 
 #define TIMER_4_INPUT_CAPTURE PL0
 
-void bit_set_portH(int bit, bool set);
-
-unsigned long time = millis();
-
+unsigned long time;
 
 void setup() {
+  time = millis();
   //Setting PH3/OCR4A to output mode
   DDRH |= 1<<3;
   
@@ -29,10 +27,6 @@ void setup() {
   //Enabling timer
   TIMER_4_ONBIT &= ~(1<<4);
 
-  // 800hz is 38.0625
-  // 400hz  77.125
-  // 250hz is 124
-
   //Sets the on compare match
   //Setting the prescalar to clk/256, and clock to CTC mode
   TIMER_4_CONTROL_A |= 1 << COM4A0;
@@ -44,22 +38,11 @@ void setup() {
   //TIMER_4_CONTROL_B |= 1 << WGM43;
   
   TIMER_4_CONTROL_B |= 1 << CS42;
-  
 }
 
 void loop() {
   task_b();
   delay(1);
-
-}
-
-void bit_set_portH(int bit, bool set){
-  if(set){
-    PORTH |= (1<<bit);
-  }
-  else{
-    PORTH &= !(1<<bit);
-  }
 }
 
 void task_b(){
@@ -69,7 +52,6 @@ void task_b(){
     TIMER_4_COMP_COUNT = 77.125;
   }
   time++;
-
   if(time == 1000){ //250 hz
     TIMER_4 = 0;
     TIMER_4_COMP_COUNT = 124;
@@ -85,5 +67,4 @@ void task_b(){
   if(time == 4000){
     time = 0;
   }
-  
 }

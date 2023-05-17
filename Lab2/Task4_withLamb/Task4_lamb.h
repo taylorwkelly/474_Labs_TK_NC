@@ -26,9 +26,39 @@
 #define HZ400 312.75
 #define HZ800 156.325
 
+/***************************************************
+ * scheduler3 prototype
+ *
+ *      Function that contains the various tasks of Task4 to execute.
+ *      Synchronizes the tasks with a 1ms delay
+ *
+ *      Taylor Kelly, Noah Crouch
+ *
+ */
+
 void scheduler3();
 
+/***************************************************
+ * JoystickTask_sched prototype
+ *
+ *      Task that uses data from the Joystick to turn on and off
+ *      a pixel on the LED Display.
+ *
+ *      Taylor Kelly, Noah Crouch
+ *
+ */
+
 void JoystickTask_sched();
+
+/***************************************************
+ * TaskBV2 prototype
+ *
+ *      Plays the Notes in "Mary Had a Little Lamb"
+ *
+ *      Taylor Kelly, Noah Crouch
+ *
+ */
+
 void TaskBV2();
 
 //Transfers 1 SPI command to LED Matrix for given row
@@ -41,6 +71,11 @@ void spiTransfer(volatile byte opcode, volatile byte data);
 //       col - column in LED matrix
 //       set - true to turn pixel on, false to turn off pixel
 void setClearPixel(int row, int col, bool set);
+
+
+// Gets the current analog data from the Joystick and stores it in a global array.
+//  Inputs:
+//    set: bool that when true, reads the data from the joystick
 void getJoystick(bool set);
 
 #define NOTE_c 478.75 //3830 // 261 Hz
