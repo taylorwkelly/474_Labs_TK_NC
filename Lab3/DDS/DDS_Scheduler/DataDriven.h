@@ -1,4 +1,5 @@
-#include "Lab3.h";
+#include "Lab3_DDS.h";
+
 #define DEAD 4
 
 typedef struct Task {
@@ -10,6 +11,8 @@ typedef struct Task {
 
 typedef struct TCB {
     Task task;
-    (void) (*fn) (void);
+    void (*fn) (void *p);    // function pointer
+    void *arg_ptr;
     unsigned int status;
+    unsigned int delay;
 } TCB;
