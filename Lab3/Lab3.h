@@ -13,4 +13,21 @@
 #define SLEEPING 3
 
 
+#define LEDPORT PORTB
+#define LED_DATA_DIR_REG DDRB
+
+#define TIMER_ALLOW PRR0
+#define TIMER_ALLOW_BIT PRTIM0
+
+#define TIMER_CTRL_REG 
+
+
+
+void task1(unsigned long);
+void task2(unsigned long);
+void task3(unsigned long);
+void task4(unsigned long);
+void task5(unsigned long);
+
+
 int compare(int, int);
