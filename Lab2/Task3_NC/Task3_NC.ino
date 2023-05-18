@@ -12,7 +12,7 @@ void setup() {
     DATA_DIRECTION_REG_LEDS |= LEDSETMASK;
     DATA_DIRECTION_REG_SPKR |= BIT3;
     // ALLOW the timer
-    TIMER_4_ALLOW_REG &= ~BIT3;
+    TIMER_4_ALLOW_REG &= ~BIT4;
 
     // Set the top to 0 for now
     TIMER_4_TOP = 0;
