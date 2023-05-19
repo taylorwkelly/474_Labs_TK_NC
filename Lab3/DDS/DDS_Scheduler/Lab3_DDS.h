@@ -23,7 +23,15 @@
 #define TIMER_CTRL_REG 
 
 // We recommend a duration of 100 ms per note
-#define E 659 // Hz
+//Notes for bloody stream
+#define D5 587
+#define F5 698
+#define A5 880
+#define G5sharp 830
+#define C6 1046
+
+
+#define E 659 // Hz  E5
 #define C 523 // Hz
 #define G 784 // Hz
 #define g 392 // Hz
