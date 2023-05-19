@@ -2,6 +2,7 @@
 
 #define DEAD 4
 
+
 typedef struct Task {
     unsigned int id;
     char* name;
@@ -12,7 +13,7 @@ typedef struct Task {
 typedef struct TCB {
     Task task;
     void (*fn) (void *p);    // function pointer
-    void *arg_ptr;
+    void *arg_ptr;    // arg pointer
     unsigned int status;
     unsigned int delay;
 } TCB;
