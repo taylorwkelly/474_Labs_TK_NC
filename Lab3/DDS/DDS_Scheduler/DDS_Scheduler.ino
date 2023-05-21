@@ -96,7 +96,15 @@ Ard.  7-Seg Pin
 }
 
 int* int_to_7Seg(int target){
-
+  int digits[4];
+  int* ptr;
+  ptr = &digits;
+  int i = 0
+  while(target > 0){
+    digits[i] = target % 10;
+    target = target / 10;
+  }
+  return ptr;
 }
 void task4_0(void *p){
 

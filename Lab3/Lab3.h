@@ -120,7 +120,7 @@ void task3() {
     int digits[4];
     int countCopy = displayCounter;
     for (int i = 0; i < 4; i++) {
-        digits[i] = countCopy / 10;
+        digits[i] = countCopy % 10;
         countCopy /= 10;
     }    
     for (int i = 0; i < 4; i++) {
@@ -132,8 +132,6 @@ void task3() {
   }  
   displayCounter++;
 }
-
-
 
 void task4();
 void task5();
