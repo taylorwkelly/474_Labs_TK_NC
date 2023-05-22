@@ -54,9 +54,9 @@ byte seven_seg_digits[10][7] = {
 
 
 
-void task1(void *p);
-void task2(void *p);
-void task3(void *p);
+void task1();
+void task2();
+void task3();
 void task4_0(void *p);
 void task4_1(void *p);
 void task4_2(void *p);
