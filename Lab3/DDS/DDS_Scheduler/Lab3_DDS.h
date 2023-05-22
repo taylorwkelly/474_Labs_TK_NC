@@ -17,8 +17,25 @@
 #define LEDPORT PORTB
 #define LED_DATA_DIR_REG DDRB
 
+
+#define DISP_DDR1 DDRA
+#define DISP_DDR2 DDRC
+#define DISP_DDR1_MASK 0xFF // 11111111
+#define DISP_DDR2_MASK 0x0F // 00001111
+
 #define TIMER_ALLOW PRR0
 #define TIMER_ALLOW_BIT PRTIM0
+
+#define TIMER_4_CTRL_REG_A TCCR4A
+#define TIMER_4_CTRL_REG_B TCCR4B
+#define TIMER_4_TOP OCR4A
+#define TIMER_4 TCNT4
+#define TIMER_4_OUT OC4A
+#define TIMER_4_ALLOW_REG PRR1
+
+#define DATA_DIRECTION_REG_SPKR DDRH
+#define TIMER_4_CTRL_REG_A_MASK 67 // 01000011
+#define TIMER_4_CTRL_REG_B_MASK 27 // 00011011
 
 #define TIMER_CTRL_REG 
 
@@ -36,6 +53,9 @@
 #define G 784 // Hz
 #define g 392 // Hz
 #define R 0 // Rest, play no sound
+
+int songIndex;
+
 int song[] = {E, R, E, R, R, E, R, R, C, R, E, R, R, G, R, R, R, R,
 R, g, R};
 

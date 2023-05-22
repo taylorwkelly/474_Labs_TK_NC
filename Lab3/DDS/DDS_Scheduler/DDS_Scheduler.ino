@@ -29,6 +29,21 @@ void (*deadTasks[N_TASKS]) ();
 
 
 void setup() {
+  LED_DATA_DIR_REG |= BIT6;
+  DATA_DIRECTION_REG_SPKR |= BIT3;
+  TIMER_4_ALLOW_REG &= ~BIT3;
+
+  DISP_DDR1 |= DISP_DDR1_MASK;
+  DISP_DDR2 |= DISP_DDR2_MASK;
+
+  TIMER_4_TOP = 0;
+
+  // SET the FAST PWM MODE as well as allow OC4A to override pin
+  // Also prescale the clock to clk/256
+  TIMER_4_CTRL_REG_A |= TIMER_4_CTRL_REG_A_MASK;
+  TIMER_4_CTRL_REG_B |= TIMER_4_CTRL_REG_B_MASK;
+
+  
   t_task1 = {1, "LED Flash", 0, 0};
   t_task2 = {2, "Mario", 0, 0};
   t_task3 = {3, "7 Segment LED", 0, 0};
@@ -50,14 +65,19 @@ void setup() {
 
   // Initializing all the TCBs to defaults
   int i = 0;
-  for(int i; i < 7; i++){
-    TCB_List[i].task = task_arr[i];
-    TCB_List[i].fn = func_ptr_list[i];
-    TCB_List[i].arg_ptr = NULL;
-    TCB_List[i].status = SLEEPING;
-    TCB_List[i].delay = SLEEPING;
-  }
-  TCB_List[i].fn = NULL;
+  TCB_List[i].task = t_task1;
+  TCB_List[i].fn = task1;
+  TCB_List[i].arg_ptr = NULL;
+  TCB_List[i].status = ACTIVE;
+  TCB_List[i].delay = 0;
+  // for(int i; i < 7; i++){
+  //   TCB_List[i].task = task_arr[i];
+  //   TCB_List[i].fn = func_ptr_list[i];
+  //   TCB_List[i].arg_ptr = NULL;
+  //   TCB_List[i].status = SLEEPING;
+  //   TCB_List[i].delay = SLEEPING;
+  // }
+  TCB_List[i+1].fn = NULL;
 
   /*
     TCB_List[i].task = task_arr[0];
@@ -120,14 +140,14 @@ void loop() {
 //This is going to loop through the TCB List, and run the task if it's state is ACTIVE
 void scheduler(){
   // Restarts the list for the scheduler
-  if(TCB_List[current_running_task_index] == NULL && current_running_task_index != 0){
+  if(TCB_List[current_running_task_index].fn == NULL && current_running_task_index != 0){
     current_running_task_index = 0;
   }
-  if(TCB_List[current_running_task_index] == NULL && current_running_task_index == 0){
+  if(TCB_List[current_running_task_index].fn == NULL && current_running_task_index == 0){
     // Means that there are no tasks to run, and theres nothing to do
   } else{
     // Runs the tasks that are active
-    while(TCB_List[current_running_task_index] != NULL){
+    while(TCB_List[current_running_task_index].fn != NULL){
       switch(TCB_List[current_running_task_index].status){
 
         case(ACTIVE):
@@ -138,7 +158,7 @@ void scheduler(){
         if(TCB_List[current_running_task_index].delay == 0){
           TCB_List[current_running_task_index].status = ACTIVE;
         }
-        case(DEAD):
+        //case(DEAD):
         //Should never get to this point
       }
     current_running_task_index++;
@@ -163,15 +183,16 @@ function should do this by changing tsk’s status to READY.
 */
 void sleep_task(int timeToSleep){
   TCB_List[current_running_task_index].delay = timeToSleep;
-  TCB_List[current_running_task_index].state = SLEEPING;
+  TCB_List[current_running_task_index].status = SLEEPING;
 }
 
 void task_self_quit(){
-  TCB_List[current_task_index].status = DEAD;
-  Dead_Tasks[dead_task_index++] = TCB_List[current_task_index];
-  TCB_List[current_task_index] = NULL;
-  int i = current_task_index;
-  while (TCB_List[i + 1] != NULL && i < N_TASKS){
+  TCB_List[current_running_task_index].status = DEAD;
+  Dead_Tasks[dead_task_index++] = TCB_List[current_running_task_index];
+  //Need to remove the task instead of nulling it
+  TCB_List[current_running_task_index].fn = NULL;
+  int i = current_running_task_index;
+  while (TCB_List[i + 1].fn != NULL && i < N_TASKS){
     TCB_List[i] = TCB_List[i + 1];
     i++;
   }
@@ -194,6 +215,7 @@ void task1() {
         LEDPORT &= ~BIT4;
     } else{
       time = 0;
+      //sleep_task(5000);
     }
     time++;
 }
@@ -217,30 +239,30 @@ void task2() {
     }
 }
 void task3(){
-  //Counts up by 1 every 100ms
-  static int displayNumb;
-  static int time;
-  if(time == 100){
-    displayNumb++;
-    time = 0;
-  }
-  int* converted_numbs = int_to_7Seg(displayNumb);
-  //Pin of the first digit, increases for each digit
-  //Could probably put this into the if block, to make it not compute every time
+  // //Counts up by 1 every 100ms
+  // static int displayNumb;
+  // static int time;
+  // if(time == 100){
+  //   displayNumb++;
+  //   time = 0;
+  // }
+  // int* converted_numbs = int_to_7Seg(displayNumb);
+  // //Pin of the first digit, increases for each digit
+  // //Could probably put this into the if block, to make it not compute every time
 
 
-  //Going to definetely need to change this part
-  //For each digit on the display
-  for(int j = 10; j < 14; j++){
-    //For each part of the digit
-    int conv_index;
-    for(int pin = 2; pin < 10; pin++;){
-      digitalWrite(pin, seven_seg_digits[*(converted_numbs + conv_index)][pin-2]);
-      conv_index++;
-    }
+  // //Going to definetely need to change this part
+  // //For each digit on the display
+  // for(int j = 10; j < 14; j++){
+  //   //For each part of the digit
+  //   int conv_index;
+  //   for(int pin = 2; pin < 10; pin++;){
+  //     digitalWrite(pin, seven_seg_digits[*(converted_numbs + conv_index)][pin-2]);
+  //     conv_index++;
+  //   }
 
-  }
-  time++;
+  // }
+  // time++;
 }
   /*
 Ard.  7-Seg Pin
@@ -264,9 +286,9 @@ Ard.  7-Seg Pin
 int* int_to_7Seg(int target){
   int digits[4] = {0};
   int* ptr;
-  ptr = &digits;
-  int i = 0
-  while(target > 0){
+  ptr = &(digits[0]);
+  int i = 0;
+  while (target > 0){
     digits[i] = target % 10;
     target = target / 10;
   }
