@@ -2,7 +2,8 @@
 
 unsigned long startTime;
 int songIndex, songCount, sleepCounter, displayCounter;
-unsigned long stepTime;
+unsigned long stepTimeSong, stepTimeDisplay;
+int digits[4] = {0,0,0,0};
 void setup() {
     LED_DATA_DIR_REG |= BIT6;
     DATA_DIRECTION_REG_SPKR |= BIT3;
@@ -19,12 +20,12 @@ void setup() {
     TIMER_4_CTRL_REG_B |= TIMER_4_CTRL_REG_B_MASK; 
 
 
-    startTime = millis(), stepTime = millis();
+    startTime = millis(), stepTimeSong = millis(), stepTimeDisplay = millis();
     songIndex = 0, songCount = 0, sleepCounter = 0, displayCounter = 0;
 }
 
 void loop() {
     task1();
-    task3();
     task2();
+    task3();
 }

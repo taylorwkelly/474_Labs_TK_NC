@@ -48,28 +48,32 @@
 #define DISP_DDR1_MASK 0xFF // 11111111
 #define DISP_DDR2_MASK 0x0F // 00001111
 
-#define DISP0_BIT 0x01 // 00000001
-#define DISP1_BIT 0x02 // 00000010
-#define DISP2_BIT 0x04 // 00000100
-#define DISP3_BIT 0x08 // 00001000
+#define DISP0_BIT B00001110
+#define DISP1_BIT B00001101 
+#define DISP2_BIT B00001011 
+#define DISP3_BIT B00000111
 
 #define SEG_ZERO B11111100
 #define SEG_ONE B01100000
-#define SEG_TWO B11011010
-#define SEG_THREE B11110010
-#define SEG_FOUR B01100110
+#define SEG_TWO B01011110
+#define SEG_THREE B01110110
+#define SEG_FOUR B11100010
 #define SEG_FIVE B10110110
 #define SEG_SIX B10111110
-#define SEG_SEVEN B11100000 
+#define SEG_SEVEN B11100100 
 #define SEG_EIGHT B11111110
 #define SEG_NINE B11100110
 
+
+// 0, 1, 5, 6, 8, 9 working
+// 2, 3, 4, 7 not working
 int disp_digits[10] = {SEG_ZERO, SEG_ONE, SEG_TWO, SEG_THREE, SEG_FOUR, SEG_FIVE, SEG_SIX, SEG_SEVEN, SEG_EIGHT, SEG_NINE};
 uint8_t disp_select[4] = {DISP0_BIT, DISP1_BIT, DISP2_BIT, DISP3_BIT};
 
 
-extern unsigned long startTime, stepTime;
+extern unsigned long startTime, stepTimeSong, stepTimeDisplay;
 extern int songCount, songIndex, sleepCounter, displayCounter;
+extern int digits[4];
 int compare(int, int);
 
 // We recommend a duration of 100 ms per note
@@ -92,14 +96,14 @@ void task1() {
 
 void task2() {
     unsigned long currTime = millis() - startTime;
-    unsigned long currTimeFromStep = millis() - stepTime;
+    unsigned long currTimeFromStep = millis() - stepTimeSong;
     if (sleepCounter > 0 && (currTimeFromStep) > 1000) {
         sleepCounter--;
-        stepTime = millis();
+        stepTimeSong = millis();
     }
     if (currTimeFromStep > 100 && sleepCounter == 0) {
         TIMER_4_TOP = song[songIndex++];
-        stepTime = millis();
+        stepTimeSong = millis();
     }
     if (songIndex > 21 && sleepCounter == 0) {
         songIndex = 0;
@@ -108,32 +112,37 @@ void task2() {
     if (songCount >= 2 && sleepCounter == 0) {
         sleepCounter = 4;
         songCount = 0;
-        stepTime = millis();
+        stepTimeSong = millis();
     }
 }
 
 
 void task3() {
-  unsigned long currTime = millis() - startTime;
-  unsigned long currTimeFromStep = millis() - stepTime;
+  unsigned long currTimeFromStep = millis() - stepTimeDisplay;
   if (currTimeFromStep > 100) {
-    int digits[4];
-    int countCopy = displayCounter;
+    int countCopy = displayCounter + 1;
     for (int i = 0; i < 4; i++) {
-        digits[i] = countCopy / 10;
+        digits[i] = countCopy % 10;
         countCopy /= 10;
-    }    
-    for (int i = 0; i < 4; i++) {
-        DISP_PORT2 = disp_select[i];
-        DISP_PORT1 = disp_digits[digits[i]];
     }
-    DISP_PORT2 &= ~DISP_DDR2_MASK;
-    DISP_PORT1 &= ~DISP_DDR1_MASK;
+    displayCounter++;
+    stepTimeDisplay = millis();
   }  
-  displayCounter++;
+    for (int i = 0; i < 4; i++)
+    {   
+        DISP_PORT1 &= 0;
+        DISP_PORT2 = disp_select[i];
+        DISP_PORT1 |= disp_digits[digits[i]];
+        delayMicroseconds(5);
+    }
+    DISP_PORT2 &= 0;
+    DISP_PORT1 &= 0;
 }
 
-
+void task4() {
+    static int time;
+        
+}
 
 void task4();
 void task5();
