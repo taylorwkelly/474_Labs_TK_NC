@@ -14,10 +14,6 @@
 
 #define N_TASKS 10
 
-#define LEDPORT PORTB
-#define LED_DATA_DIR_REG DDRB
-
-
 #define DISP_DDR1 DDRA
 #define DISP_DDR2 DDRC
 #define DISP_DDR1_MASK 0xFF // 11111111

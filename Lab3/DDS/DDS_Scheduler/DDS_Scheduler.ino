@@ -2,7 +2,7 @@
 
 
 TCB TCB_List[N_TASKS];
-TCB Sleeping_Tasks[N_TASKS];
+//TCB Sleeping_Tasks[N_TASKS];
 TCB Dead_Tasks[N_TASKS];
 
 
@@ -30,7 +30,7 @@ void (*deadTasks[N_TASKS]) ();
 
 
 void setup() {
-  LED_DATA_DIR_REG |= BIT6;
+  pinMode(13, OUTPUT);
   DATA_DIRECTION_REG_SPKR |= BIT3;
   TIMER_4_ALLOW_REG &= ~BIT3;
 
@@ -229,11 +229,11 @@ void task_start(TCB *task){
 
 
 void task1() {
-    static int time;
+    static int time = 0;
     if (time < 250) {
-        LEDPORT |= BIT4;
+        digitalWrite(13, HIGH);
     } else if (time < 1000) {
-        LEDPORT &= ~BIT4;
+        digitalWrite(13, LOW);
     } else{
       time = 0;
       //task_self_quit();
@@ -244,8 +244,8 @@ void task1() {
 void task2() {
     // Plays the song, then sleeps for 4 seconds
     //Each note will be 100 ms
-    static int time;
-    static int bpm;
+    static int time = 0;
+    static int bpm = 0;
     // Goes to each note
     if (time == time_array[bpm]) {
         TIMER_4_TOP = stream[songIndex++];
