@@ -259,10 +259,10 @@ void task1() {
       //task_self_quit();
     }
     time++;
-    // if(count >= 5){
-      //task_self_quit();
-      //return;
-    // }
+    if(count >= 5){
+      task_self_quit();
+      return;
+    }
 }
 
 void task2() {
@@ -283,7 +283,7 @@ void task2() {
     } 
     if (songCount >= 2) {
       songCount = 0;
-      sleep_task(10000);
+      sleep_task(2000);
       //task_self_quit();
     }
     time++;
