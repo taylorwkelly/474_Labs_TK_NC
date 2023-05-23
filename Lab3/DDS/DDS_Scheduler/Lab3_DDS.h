@@ -14,11 +14,6 @@
 
 #define N_TASKS 10
 
-#define DISP_DDR1 DDRA
-#define DISP_DDR2 DDRC
-#define DISP_DDR1_MASK 0xFF // 11111111
-#define DISP_DDR2_MASK 0x0F // 00001111
-
 #define TIMER_ALLOW PRR0
 #define TIMER_ALLOW_BIT PRTIM0
 
@@ -35,6 +30,37 @@
 
 #define TIMER_CTRL_REG 
 
+#define DISP_PORT1 PORTA
+#define DISP_PORT2 PORTC
+
+#define DISP_DDR1 DDRA
+#define DISP_DDR2 DDRC
+#define DISP_DDR1_MASK 0xFF // 11111111
+#define DISP_DDR2_MASK 0x0F // 00001111
+
+#define DISP0_BIT B00001110
+#define DISP1_BIT B00001101 
+#define DISP2_BIT B00001011 
+#define DISP3_BIT B00000111
+
+#define SEG_ZERO B11111100
+#define SEG_ONE B01100000
+#define SEG_TWO B01011110
+#define SEG_THREE B01110110
+#define SEG_FOUR B11100010
+#define SEG_FIVE B10110110
+#define SEG_SIX B10111110
+#define SEG_SEVEN B11100100 
+#define SEG_EIGHT B11111110
+#define SEG_NINE B11100110
+
+
+int disp_digits[10] = {SEG_ZERO, SEG_ONE, SEG_TWO, SEG_THREE, SEG_FOUR, SEG_FIVE, SEG_SIX, SEG_SEVEN, SEG_EIGHT, SEG_NINE};
+uint8_t disp_select[4] = {DISP0_BIT, DISP1_BIT, DISP2_BIT, DISP3_BIT};
+
+
+unsigned long stepTimeDisplay;
+int displayCounter;
 // We recommend a duration of 100 ms per note
 //Notes for bloody stream
 

@@ -27,11 +27,25 @@ void (*runningTasks[N_TASKS]) ();
 void (*waitingTasks[N_TASKS]) ();
 void (*deadTasks[N_TASKS]) ();
 
-
+int digits[4];
 
 void setup() {
   pinMode(13, OUTPUT);
+
   pinMode(22, OUTPUT);
+  pinMode(23, OUTPUT);
+  pinMode(24, OUTPUT);
+  pinMode(25, OUTPUT);
+  pinMode(26, OUTPUT);
+  pinMode(27, OUTPUT);
+  pinMode(28, OUTPUT);
+  pinMode(29, OUTPUT);
+  pinMode(30, OUTPUT);
+  pinMode(31, OUTPUT);
+  pinMode(32, OUTPUT);
+  pinMode(33, OUTPUT);
+
+
 
 
   DATA_DIRECTION_REG_SPKR |= BIT3;
@@ -56,10 +70,10 @@ void setup() {
   t_task1 = {1, "LED Flash", 0, 0};
   t_task2 = {2, "Mario", 0, 0};
   t_task3 = {3, "7 Segment LED", 0, 0};
-  t_task4_0 = {40, "7 Seg Countdown", 0, 0};
-  t_task4_1 = {41, "Music Play", 0, 0};
-  t_task4_2 = {42, "Music Freq", 0, 0};
-  t_task5 = {5, "Supervisor", 0, 0};
+  t_task4_0 = {4, "7 Seg Countdown", 0, 0};
+  t_task4_1 = {5, "Music Play", 0, 0};
+  t_task4_2 = {6, "Music Freq", 0, 0};
+  t_task5 = {7, "Supervisor", 0, 0};
 
   
   // Adding all the tasks to the pointer list
@@ -244,10 +258,11 @@ void task1() {
       count++;
       //task_self_quit();
     }
-    if(count >= 2){
-      task_self_quit();
-    }
     time++;
+    // if(count >= 5){
+      //task_self_quit();
+      //return;
+    // }
 }
 
 void task2() {
@@ -268,65 +283,50 @@ void task2() {
     } 
     if (songCount >= 2) {
       songCount = 0;
-      TCB* rez = &TCB_List[0];
-      task_start(rez);
-
       sleep_task(10000);
       //task_self_quit();
     }
     time++;
 }
-void task3(){
-    static int time3 = 0;
-    if (time3 < 250) {
-        digitalWrite(22, HIGH);
-    } else if (time3 < 1000) {
-        digitalWrite(22, LOW);
-    } else{
-      time3 = 0;
-      //task_self_quit();
+
+
+
+void task3() {
+  unsigned long currTimeFromStep = millis() - stepTimeDisplay;
+  if (currTimeFromStep > 100) {
+    int countCopy = displayCounter + 1;
+    for (int i = 0; i < 4; i++) {
+        digits[i] = countCopy % 10;
+        countCopy /= 10;
     }
-    time3++;
-  // //Counts up by 1 every 100ms
-  // static int displayNumb;
-  // static int time;
-  // if(time == 100){
-  //   displayNumb++;
-  //   time = 0;
-  // }
-  // int* converted_numbs = int_to_7Seg(displayNumb);
-  // //Pin of the first digit, increases for each digit
-  // //Could probably put this into the if block, to make it not compute every time
-
-
-  // //Going to definetely need to change this part
-  // //For each digit on the display
-  // for(int j = 10; j < 14; j++){
-  //   //For each part of the digit
-  //   int conv_index;
-  //   for(int pin = 2; pin < 10; pin++;){
-  //     digitalWrite(pin, seven_seg_digits[*(converted_numbs + conv_index)][pin-2]);
-  //     conv_index++;
-  //   }
-
-  // }
-  // time++;
+    displayCounter++;
+    stepTimeDisplay = millis();
+  }  
+    for (int i = 0; i < 4; i++)
+    {   
+        DISP_PORT1 &= 0;
+        DISP_PORT2 = disp_select[i];
+        DISP_PORT1 |= disp_digits[digits[i]];
+        delayMicroseconds(5);
+    }
+    DISP_PORT2 &= 0;
+    DISP_PORT1 &= 0;
 }
   /*
 Ard.  7-Seg Pin
- 2	  11 (A)
- 3	  7 (B)
- 4	  4 (C)
- 5	  2 (D)
- 6	  1 (E)
- 7	  10 (F)
- 8 	  5 (G)
- 9 	  3 (Dot P)
+ 22	  11 (A)
+ 23	  7 (B)
+ 24	  4 (C)
+ 25	  2 (D)
+ 26	  1 (E)
+ 27	  10 (F)
+ 28 	  5 (G)
+ 29 	  3 (Dot P)
 
- 10   12 (Dig. 1)
- 11   9 (Dig 2)
- 12   8 (Dig 3)
- 13   6 (Dig 4)
+ 30   12 (Dig. 1)
+ 31   9 (Dig 2)
+ 32   8 (Dig 3)
+ 33   6 (Dig 4)
 }
 */
 
