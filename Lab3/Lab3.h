@@ -139,10 +139,5 @@ void task3() {
     DISP_PORT1 &= 0;
 }
 
-void task4() {
-    static int time;
-        
-}
-
 void task4();
 void task5();

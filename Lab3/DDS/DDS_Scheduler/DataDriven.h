@@ -12,7 +12,7 @@ typedef struct Task {
 
 typedef struct TCB {
     Task task;
-    void (*fn) (void *p);    // function pointer
+    void (*fn) ();    // function pointer
     void *arg_ptr;    // arg pointer
     unsigned int status;
     unsigned int delay;
