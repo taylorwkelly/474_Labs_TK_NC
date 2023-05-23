@@ -45,8 +45,8 @@ void setup() {
   pinMode(32, OUTPUT);
   pinMode(33, OUTPUT);
 
-
-
+  stepTimeDisplay = millis();
+  displayCounter = 0;
 
   DATA_DIRECTION_REG_SPKR |= BIT3;
   TIMER_4_ALLOW_REG &= ~BIT3;
