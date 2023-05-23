@@ -31,6 +31,9 @@ void (*deadTasks[N_TASKS]) ();
 
 void setup() {
   pinMode(13, OUTPUT);
+  pinMode(22, OUTPUT);
+
+
   DATA_DIRECTION_REG_SPKR |= BIT3;
   TIMER_4_ALLOW_REG &= ~BIT3;
 
@@ -46,7 +49,10 @@ void setup() {
 
   songIndex = 0;
   songCount = 0;
-  
+  task_count = 0;
+  dead_count = 0;
+
+
   t_task1 = {1, "LED Flash", 0, 0};
   t_task2 = {2, "Mario", 0, 0};
   t_task3 = {3, "7 Segment LED", 0, 0};
@@ -78,6 +84,14 @@ void setup() {
 
   TCB_List[i].task = task_arr[1];
   TCB_List[i].fn = task2;
+  TCB_List[i].arg_ptr = NULL;
+  TCB_List[i].status = ACTIVE;
+  TCB_List[i].delay = 0;
+  i++;
+  task_count++;
+
+  TCB_List[i].task = task_arr[2];
+  TCB_List[i].fn = task3;
   TCB_List[i].arg_ptr = NULL;
   TCB_List[i].status = ACTIVE;
   TCB_List[i].delay = 0;
@@ -167,8 +181,6 @@ void scheduler(){
         if(TCB_List[current_running_task_index].delay == 0){
           TCB_List[current_running_task_index].status = ACTIVE;
         }
-        //case(DEAD):
-        //Should never get to this point
       }
       current_running_task_index++;
     }
@@ -197,32 +209,24 @@ void sleep_task(int timeToSleep){
 
 void task_self_quit(){
   TCB_List[current_running_task_index].status = DEAD;
-  Dead_Tasks[dead_task_index++] = TCB_List[current_running_task_index];
+  Dead_Tasks[dead_count] = TCB_List[current_running_task_index];
   //Need to remove the task instead of nulling it
   //TCB_List[current_running_task_index].fn = NULL;
-  int i = 0;
-  while(TCB_List[i + 1].fn != NULL && i < N_TASKS){
-    TCB_List[i] = TCB_List[i + 1];
-    i++;
-  }
+
+  // Goes to spot where the task is to be removed
+  // int i = current_running_task_index;
+  // while(TCB_List[i + 1].fn != NULL && i < N_TASKS){
+  //   TCB_List[i] = TCB_List[i + 1];
+  //   i++;
+  // }
   task_count--;
   dead_count++;
   
 }
 
 void task_start(TCB *task){
-  int i = 0;
   //Adds the task back in at the end of the list
-  while(Dead_Tasks[i + 1].fn != NULL && i < N_TASKS){
-    if(Dead_Tasks[i].task.id = task->task.id){
-      Dead_Tasks[i].status = ACTIVE;
-      TCB_List[task_count] = Dead_Tasks[i];
-      Dead_Tasks[i] = Dead_Tasks[i+1];
-      break;
-    }
-    i++;
-  }
-  
+  task->status = ACTIVE;
 }
 
 
@@ -230,13 +234,18 @@ void task_start(TCB *task){
 
 void task1() {
     static int time = 0;
+    static int count = 0;
     if (time < 250) {
         digitalWrite(13, HIGH);
     } else if (time < 1000) {
         digitalWrite(13, LOW);
     } else{
       time = 0;
+      count++;
       //task_self_quit();
+    }
+    if(count >= 2){
+      task_self_quit();
     }
     time++;
 }
@@ -259,12 +268,25 @@ void task2() {
     } 
     if (songCount >= 2) {
       songCount = 0;
+      TCB* rez = &TCB_List[0];
+      task_start(rez);
+
       sleep_task(10000);
       //task_self_quit();
     }
     time++;
 }
 void task3(){
+    static int time3 = 0;
+    if (time3 < 250) {
+        digitalWrite(22, HIGH);
+    } else if (time3 < 1000) {
+        digitalWrite(22, LOW);
+    } else{
+      time3 = 0;
+      //task_self_quit();
+    }
+    time3++;
   // //Counts up by 1 every 100ms
   // static int displayNumb;
   // static int time;
