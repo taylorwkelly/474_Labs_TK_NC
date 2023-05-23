@@ -17,6 +17,7 @@ Task t_task5;
 Task *t_ptr;
 
 int current_running_task_index, dead_task_index;
+int task_count, dead_count;
 
 Task task_arr[7] = {t_task1, t_task2, t_task3, t_task4_0, t_task4_1, t_task4_2, t_task5};
 
@@ -43,6 +44,8 @@ void setup() {
   TIMER_4_CTRL_REG_A |= TIMER_4_CTRL_REG_A_MASK;
   TIMER_4_CTRL_REG_B |= TIMER_4_CTRL_REG_B_MASK;
 
+  songIndex = 0;
+  songCount = 0;
   
   t_task1 = {1, "LED Flash", 0, 0};
   t_task2 = {2, "Mario", 0, 0};
@@ -65,11 +68,28 @@ void setup() {
 
   // Initializing all the TCBs to defaults
   int i = 0;
-  TCB_List[i].task = t_task1;
+  TCB_List[i].task = task_arr[0];
   TCB_List[i].fn = task1;
   TCB_List[i].arg_ptr = NULL;
   TCB_List[i].status = ACTIVE;
   TCB_List[i].delay = 0;
+  i++;
+  task_count++;
+
+  TCB_List[i].task = task_arr[1];
+  TCB_List[i].fn = task2;
+  TCB_List[i].arg_ptr = NULL;
+  TCB_List[i].status = ACTIVE;
+  TCB_List[i].delay = 0;
+  i++;
+  task_count++;
+
+  // TCB_List[i].task = t_task3;
+  // TCB_List[i].fn = task3;
+  // TCB_List[i].arg_ptr = NULL;
+  // TCB_List[i].status = ACTIVE;
+  // TCB_List[i].delay = 0;
+  //i++;
   // for(int i; i < 7; i++){
   //   TCB_List[i].task = task_arr[i];
   //   TCB_List[i].fn = func_ptr_list[i];
@@ -80,17 +100,6 @@ void setup() {
   TCB_List[i+1].fn = NULL;
 
   /*
-    TCB_List[i].task = task_arr[0];
-    TCB_List[i].fn = task1;
-    TCB_List[i].arg_ptr = NULL;
-    TCB_List[i].status = SLEEPING;
-    TCB_List[i].delay = SLEEPING;
-
-    TCB_List[i].task = task_arr[1];
-    TCB_List[i].fn = task2;
-    TCB_List[i].arg_ptr = NULL;
-    TCB_List[i].status = SLEEPING;
-    TCB_List[i].delay = SLEEPING;
 
     TCB_List[i].task = task_arr[2];
     TCB_List[i].fn = task3;
@@ -161,7 +170,7 @@ void scheduler(){
         //case(DEAD):
         //Should never get to this point
       }
-    current_running_task_index++;
+      current_running_task_index++;
     }
   }
 }
@@ -190,18 +199,30 @@ void task_self_quit(){
   TCB_List[current_running_task_index].status = DEAD;
   Dead_Tasks[dead_task_index++] = TCB_List[current_running_task_index];
   //Need to remove the task instead of nulling it
-  TCB_List[current_running_task_index].fn = NULL;
-  int i = current_running_task_index;
-  while (TCB_List[i + 1].fn != NULL && i < N_TASKS){
+  //TCB_List[current_running_task_index].fn = NULL;
+  int i = 0;
+  while(TCB_List[i + 1].fn != NULL && i < N_TASKS){
     TCB_List[i] = TCB_List[i + 1];
     i++;
   }
+  task_count--;
+  dead_count++;
   
 }
 
 void task_start(TCB *task){
-
-
+  int i = 0;
+  //Adds the task back in at the end of the list
+  while(Dead_Tasks[i + 1].fn != NULL && i < N_TASKS){
+    if(Dead_Tasks[i].task.id = task->task.id){
+      Dead_Tasks[i].status = ACTIVE;
+      TCB_List[task_count] = Dead_Tasks[i];
+      Dead_Tasks[i] = Dead_Tasks[i+1];
+      break;
+    }
+    i++;
+  }
+  
 }
 
 
@@ -215,7 +236,7 @@ void task1() {
         LEDPORT &= ~BIT4;
     } else{
       time = 0;
-      //sleep_task(5000);
+      //task_self_quit();
     }
     time++;
 }
@@ -224,19 +245,24 @@ void task2() {
     // Plays the song, then sleeps for 4 seconds
     //Each note will be 100 ms
     static int time;
-    static int songCount;
+    static int bpm;
     // Goes to each note
-    if (time == 100) {
-        TIMER_4_TOP = song[songIndex++];
+    if (time == time_array[bpm]) {
+        TIMER_4_TOP = stream[songIndex++];
         time = 0;
+        bpm++;
     }
-    if (songIndex > 21) {
+    if (songIndex > 44 || bpm > 44) {
         songIndex = 0;
+        bpm = 0;
         songCount++;
     } 
     if (songCount >= 2) {
-      sleep_task(4000);
+      songCount = 0;
+      sleep_task(10000);
+      //task_self_quit();
     }
+    time++;
 }
 void task3(){
   // //Counts up by 1 every 100ms

@@ -41,23 +41,39 @@
 
 // We recommend a duration of 100 ms per note
 //Notes for bloody stream
-#define D5 587
-#define F5 698
-#define A5 880
-#define G5sharp 830
-#define C6 1046
 
+//targ_freq = 16000000/(2*N * TOP)  n is prescalar, top is frequency value
 
-#define E 659 // Hz  E5
-#define C 523 // Hz
-#define G 784 // Hz
-#define g 392 // Hz
-#define R 0 // Rest, play no sound
+#define D5 212.947
+#define F5 179.083
+#define A5 142.045
+#define G5sharp 150.602
+#define C6 119.503
+#define G5 159.441
 
-int songIndex;
+//28 ms per 16th note
+#define quickRest 50
+#define rest16 200
+#define rest8 400
+#define rest2 1600
 
-int song[] = {E, R, E, R, R, E, R, R, C, R, E, R, R, G, R, R, R, R,
-R, g, R};
+#define NOTE_E 189.6813354 //659Hz for prescaler 64
+#define NOTE_C 239.0057361 //523Hz
+#define NOTE_G 159.4387755 //784Hz
+#define NOTE_g 318.877551 //392Hz
+#define NOTE_R 0 // Rest, play no sound
+float song[] = {NOTE_E, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_C, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_G, NOTE_R, NOTE_R, NOTE_R, NOTE_R,
+NOTE_R, NOTE_g, NOTE_R};
+
+int time_array[] = {rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
+                    rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
+                    rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest2, rest16, rest16};
+
+float stream[] = {D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R,
+                  D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R, 
+                  D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5, NOTE_R, C6, C6, NOTE_R, NOTE_R};
+
+int songIndex, songCount;
 
 byte seven_seg_digits[10][7] = { 
   { 1,1,1,1,1,1,0 },  // = 0
