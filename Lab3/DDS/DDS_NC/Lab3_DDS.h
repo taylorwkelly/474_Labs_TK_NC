@@ -48,10 +48,10 @@
 #define G5 159.441
 
 //28 ms per 16th note
-#define quickRest 25
-#define rest16 100
-#define rest8 200
-#define rest2 800
+#define quickRest 50
+#define rest16 200
+#define rest8 400
+#define rest2 1600
 
 #define NOTE_E 189.6813354 //659Hz for prescaler 64
 #define NOTE_C 239.0057361 //523Hz

@@ -12,7 +12,7 @@ void setup() {
         initTask(tasks[task]);
     }
     task1.name = "LED FLASH"; task2.name = "SPKR SOUND"; task3.name = "DISPLAY CDOWN";
-    task4.name = "SMILEY"; task5.name = "CONTROLLER";
+    task4.name = "CSE 474"; task5.name = "CONTROLLER";
     TCB t1, t2, t3, t4, t5;
     TCBs[0]=t1; TCBs[1]=t2; TCBs[2]=t3; TCBs[3]=t4; TCBs[4]=t5; TCBs[5]=nullptr;
 

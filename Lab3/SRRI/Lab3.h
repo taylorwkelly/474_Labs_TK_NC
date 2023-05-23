@@ -82,14 +82,31 @@ extern int digits[4];
 int compare(int, int);
 
 // We recommend a duration of 100 ms per note
-#define NOTE_E 189.6813354 //659Hz for prescaler 64
-#define NOTE_C 239.0057361 //523Hz
-#define NOTE_G 159.4387755 //784Hz
-#define NOTE_g 318.877551 //392Hz
-#define NOTE_R 0 // Rest, play no sound
-float song[] = {NOTE_E, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_C, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_G, NOTE_R, NOTE_R, NOTE_R, NOTE_R,
-NOTE_R, NOTE_g, NOTE_R};
+// We recommend a duration of 100 ms per note
+//Notes for bloody stream
 
+//targ_freq = 16000000/(2*N * TOP)  n is prescalar, top is frequency value
+
+#define D5 212.947
+#define F5 179.083
+#define A5 142.045
+#define G5sharp 150.602
+#define C6 119.503
+#define G5 159.441
+
+//28 ms per 16th note
+#define quickRest 25
+#define rest16 100
+#define rest8 200
+#define rest2 800
+
+int time_array[] = {rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
+                    rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
+                    rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest2, rest16, rest16};
+
+float stream[] = {D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R,
+                  D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R, 
+                  D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5, NOTE_R, C6, C6, NOTE_R, NOTE_R};
 void task1() {
     unsigned long currTime = millis() - startTime;
     if (currTime % 1000 < 250) {

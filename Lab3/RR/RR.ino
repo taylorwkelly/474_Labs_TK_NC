@@ -27,5 +27,4 @@ void setup() {
 void loop() {
     task1();
     task2();
-    task3();
 }
