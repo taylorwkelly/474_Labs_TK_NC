@@ -85,6 +85,7 @@ int compare(int, int);
 #define rest16 100
 #define rest8 200
 #define rest2 800
+#define NOTE_R 0
 
 int time_array[] = {rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
                     rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
@@ -105,16 +106,19 @@ void task1() {
 void task2() {
     unsigned long currTime = millis() - startTime;
     unsigned long currTimeFromStep = millis() - stepTimeSong;
+    static int bpm = 0;
     if (sleepCounter > 0 && (currTimeFromStep) > 1000) {
         sleepCounter--;
         stepTimeSong = millis();
     }
-    if (currTimeFromStep > 100 && sleepCounter == 0) {
-        TIMER_4_TOP = song[songIndex++];
+    if (currTimeFromStep > time_array[bpm] && sleepCounter == 0) {
+        TIMER_4_TOP = stream[songIndex++];
+        bpm++;
         stepTimeSong = millis();
     }
-    if (songIndex > 21 && sleepCounter == 0) {
+    if (songIndex > 44 && sleepCounter == 0) {
         songIndex = 0;
+        bpm = 0;
         songCount++;
     } 
     if (songCount >= 2 && sleepCounter == 0) {
