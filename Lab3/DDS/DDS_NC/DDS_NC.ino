@@ -1,5 +1,5 @@
-#include "../../../Lab3/Lab3.h";
-#include "../DDS_Scheduler/DataDriven.h";
+#include "Lab3.h";
+#include "DataDriven.h";
 
 TCB TCBs[10];
 void initTask(Task);

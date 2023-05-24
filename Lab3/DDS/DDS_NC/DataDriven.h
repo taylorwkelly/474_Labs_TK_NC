@@ -1,4 +1,4 @@
-#include "Lab3_DDS.h";
+#include "Lab3.h";
 
 #define DEAD 4
 

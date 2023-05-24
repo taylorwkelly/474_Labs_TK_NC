@@ -1,4 +1,4 @@
-#include "C:\\Users\\noah-\\Documents\\EE-CSE-474\\474_Labs_TK_NC\\Lab3\\Lab3.h";
+#include "Lab3.h";
 
 unsigned long startTime;
 int songIndex, songCount, sleepCounter, displayCounter;
