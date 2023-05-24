@@ -29,7 +29,7 @@ void (*runningTasks[N_TASKS]) ();
 void (*waitingTasks[N_TASKS]) ();
 void (*deadTasks[N_TASKS]) ();
 
-int digits[4] = {0};
+int digits[4];
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -69,15 +69,13 @@ void setup() {
   dead_count = 0;
 
 
-  t_task1 = {0, "LED Flash", 0, 0};
-  t_task2 = {1, "Mario", 0, 0};
-  t_task3 = {2, "7 Segment LED", 0, 0};
-  t_task4_0 = {3, "7 Seg Countdown", 0, 0};
-  t_task4_1 = {4, "Music Play", 0, 0};
-  t_task4_2 = {5, "Music Freq", 0, 0};
-  t_task5 = {6, "Supervisor", 0, 0};
-
-  Task t_task4 = {4, "Count Music w Freq", 0, 0};
+  t_task1 = {1, "LED Flash", 0, 0};
+  t_task2 = {2, "Mario", 0, 0};
+  t_task3 = {3, "7 Segment LED", 0, 0};
+  t_task4_0 = {4, "7 Seg Countdown", 0, 0};
+  t_task4_1 = {5, "Music Play", 0, 0};
+  t_task4_2 = {6, "Music Freq", 0, 0};
+  t_task5 = {7, "Supervisor", 0, 0};
 
   
   // Adding all the tasks to the pointer list
@@ -254,25 +252,18 @@ return;
 }
 
 */
-
-
-/*
-halt_me() {
-TaskList[t_curr].state = STATE_INACTIVE;
-}
-*/
 void task_self_quit(){
   TCB_List[current_running_task_index].status = DEAD;
   Dead_Tasks[dead_count] = TCB_List[current_running_task_index];
-  //Once the status is set to dead, there is no need to take it out of
-  // TCB list, as it will be skipped over
+  //Need to remove the task instead of nulling it
+  //TCB_List[current_running_task_index].fn = NULL;
 
+  // Goes to spot where the task is to be removed
   // int i = current_running_task_index;
   // while(TCB_List[i + 1].fn != NULL && i < N_TASKS){
   //   TCB_List[i] = TCB_List[i + 1];
   //   i++;
   // }
-  // TCB_List[i+1].fn = NULL;
   task_count--;
   dead_count++;
   
@@ -280,9 +271,10 @@ void task_self_quit(){
 
 void task_start(TCB *task){
   //Adds the task back in at the end of the list
-  TCB tcb = *(task);
-  TCB_List[tcb.task.id].status = ACTIVE;
+  task->status = ACTIVE;
 }
+
+
 
 
 void task1() {
@@ -341,9 +333,6 @@ void task3() {
     displayCounter++;
     stepTimeDisplay = millis();
   }  
-  // Currently updating the display every 5 Microseconds
-  // Don't really need to update that often, as the info only
-  // updated once every 100 ms
     for (int i = 0; i < 4; i++)
     {   
         DISP_PORT1 &= 0;
@@ -354,8 +343,6 @@ void task3() {
     DISP_PORT2 &= 0;
     DISP_PORT1 &= 0;
 }
-
-
   /*
 Ard.  7-Seg Pin
  22	  11 (A)
@@ -375,81 +362,28 @@ Ard.  7-Seg Pin
 */
 
 
-
-/*
-Task 4 is a new task that combines and modifies
-tasks 2 and 3 as follows. 
-While no music is being output, make it so the 7-segment
-display indicates a countdown in 10ths of a second until the next time the theme is
-played (check the HINT below). 
-During the music, display the frequency (in decimal
-Hz.) of the current tone on your 7-Segment display. (your code doesn’t have to measure
-the frequency, you have it in your code somewhere).
-
-
-*/
-void int_to_seg(int target){
-  for (int i = 0; i < 4; i++) {
+int* int_to_7Seg(int target){
+  int digits[4] = {0};
+  int* ptr;
+  ptr = &(digits[0]);
+  int i = 0;
+  while (target > 0){
     digits[i] = target % 10;
-    target /= 10;
+    target = target / 10;
   }
+  return ptr;
 }
-// This function will be the countdown until the next time the music plays
-// Going to have a countdown of 5 seconds rn
-void task4_0(){
-  static int time = 0;
-  static int display_count = 0;
-  static int countdown = 5000;
-  if(time >= 100){
-    int_to_seg(countdown - display_count);
-    display_count++;
-    for (int i = 0; i < 4; i++)
-    {   
-      DISP_PORT1 &= 0;
-      DISP_PORT2 = disp_select[i];
-      DISP_PORT1 |= disp_digits[digits[i]];
-    }
-    // DISP_PORT2 &= 0;
-    // DISP_PORT1 &= 0;
-  }
 
 
+void task4_0(void *p){
+
 }
-// Task to play the music
 void task4_1(void *p){
-  // Plays the song, then sleeps for 4 seconds
-  //Each note will be 100 ms
-  static int time = 0;
-  static int bpm = 0;
-  // Goes to each note
-  if (time == time_array[bpm]) {
-      TIMER_4_TOP = stream[songIndex++];
-      time = 0;
-      bpm++;
-  }
-  if (songIndex > 44 || bpm > 44) {
-      songIndex = 0;
-      bpm = 0;
-      songCount++;
-  } 
-  if (songCount >= 2) {
-    songCount = 0;
-    sleep_task(2000);
-    //task_self_quit();
-  }
-  time++;
+
 }
-// Task to show the music frequency
 void task4_2(void *p){
 
 }
-
-void task4(){
-  task4_0();
-  task4_1();
-  task4_2();
-}
-
 void task5(void *p){
 
 }
