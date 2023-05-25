@@ -78,6 +78,7 @@ extern int digits[4];
 #define G5sharp 150.602
 #define C6 119.503
 #define G5 159.441
+#define NOTE_R 0
 
 //28 ms per 16th note
 #define quickRest 25
@@ -108,8 +109,8 @@ void task2() {
         sleepCounter--;
         stepTimeSong = millis();
     }
-    if (currTimeFromStep > 100 && sleepCounter == 0) {
-        TIMER_4_TOP = song[songIndex++];
+    if (currTimeFromStep > time_array[songIndex] && sleepCounter == 0) {
+        TIMER_4_TOP = stream[songIndex++];
         stepTimeSong = millis();
     }
     if (songIndex > 21 && sleepCounter == 0) {
@@ -139,7 +140,7 @@ void task3() {
     {   
         DISP_PORT1 &= 0;
         DISP_PORT2 = disp_select[i];
-        DISP_PORT1 |= disp_digits[digits[i]];
+        // DISP_PORT1 |= disp_digits[digits[i]];
         DISP_PORT1 |= digits[i];
         delayMicroseconds(5);
     }
