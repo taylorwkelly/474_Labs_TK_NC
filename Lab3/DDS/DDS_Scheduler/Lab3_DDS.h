@@ -121,10 +121,10 @@ int songIndex, songCount;
 void task1();
 void task2();
 void task3();
-void task4_0(void *p);
-void task4_1(void *p);
-void task4_2(void *p);
-void task5(void *p);
+void task4_0();
+void task4_1();
+void task4_2();
+void task5();
 
 
 int compare(int, int);

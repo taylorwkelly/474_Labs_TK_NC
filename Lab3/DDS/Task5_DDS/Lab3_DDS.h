@@ -7,13 +7,30 @@
 #define BIT6 (1 << 6);
 #define BIT7 (1 << 7);
 
+#define PIN_A 29
+#define PIN_B 28
+#define PIN_C 27
+#define PIN_D 26
+#define PIN_E 25
+#define PIN_F 24
+#define PIN_G 23
+#define PIN_DOT 22
+
+
+#define SEG_DISP4 34
+#define SEG_DISP3 35
+#define SEG_DISP2 36
+#define SEG_DISP1 37
+
 #define ACTIVE 0
 #define DELAYED 1
 #define HALTED 2
 #define SLEEPING 3
 
-#define LEDPORT PORTH // Contains Pin13 in Bit position 7
-#define LED_DATA_DIR_REG DDRH
+#define N_TASKS 10
+
+#define TIMER_ALLOW PRR0
+#define TIMER_ALLOW_BIT PRTIM0
 
 #define TIMER_4_CTRL_REG_A TCCR4A
 #define TIMER_4_CTRL_REG_B TCCR4B
@@ -25,6 +42,8 @@
 #define DATA_DIRECTION_REG_SPKR DDRH
 #define TIMER_4_CTRL_REG_A_MASK 67 // 01000011
 #define TIMER_4_CTRL_REG_B_MASK 27 // 00011011
+
+#define TIMER_CTRL_REG 
 
 #define DISP_PORT1 PORTA
 #define DISP_PORT2 PORTC
@@ -41,32 +60,52 @@
 
 #define SEG_ZERO B11111100
 #define SEG_ONE B01100000
-#define SEG_TWO B01011110
-#define SEG_THREE B01110110
-#define SEG_FOUR B11100010
+#define SEG_TWO B11011010
+#define SEG_THREE B11110010
+#define SEG_FOUR B01100110
 #define SEG_FIVE B10110110
 #define SEG_SIX B10111110
 #define SEG_SEVEN B11100100 
 #define SEG_EIGHT B11111110
 #define SEG_NINE B11100110
 
-#define SEG_C B10011100
-#define SEG_S B10110110
-#define SEG_E B10011110
-#define SEG_BLANK B0
-
-int sign_values[11] = {SEG_BLANK, SEG_BLANK, SEG_BLANK, SEG_BLANK, SEG_FOUR, SEG_SEVEN, SEG_FOUR, SEG_BLANK, SEG_E, SEG_S, SEG_C};
-
 
 int disp_digits[10] = {SEG_ZERO, SEG_ONE, SEG_TWO, SEG_THREE, SEG_FOUR, SEG_FIVE, SEG_SIX, SEG_SEVEN, SEG_EIGHT, SEG_NINE};
 uint8_t disp_select[4] = {DISP0_BIT, DISP1_BIT, DISP2_BIT, DISP3_BIT};
 
+byte seven_seg_digits[10][7] = { { 1,1,1,1,1,1,0 },  // = 0
+                              { 0,1,1,0,0,0,0 },  // = 1
+                              { 1,1,0,1,1,0,1 },  // = 2
+                              { 1,1,1,1,0,0,1 },  // = 3
+                              { 0,1,1,0,0,1,1 },  // = 4
+                              { 1,0,1,1,0,1,1 },  // = 5
+                              { 1,0,1,1,1,1,1 },  // = 6
+                              { 1,1,1,0,0,0,0 },  // = 7
+                              { 1,1,1,1,1,1,1 },  // = 8
+                              { 1,1,1,0,0,1,1 }   // = 9
+                              };
 
-extern unsigned long startTime, stepTimeSong, stepTimeDisplay;
-extern int songCount, songIndex, sleepCounter, displayCounter;
-extern int digits[4];
+/*
+Pins for the display setup
+22: Dot
+23: G
+24: F
+25 E
+26 D
+27 C
+28 B
+29 A
 
-// We recommend a duration of 100 ms per note
+
+34: Display 4
+35 Disp 3
+36 Disp 2
+37 Disp 1
+*/
+
+
+unsigned long stepTimeDisplay;
+int displayCounter;
 // We recommend a duration of 100 ms per note
 //Notes for bloody stream
 
@@ -80,11 +119,18 @@ extern int digits[4];
 #define G5 159.441
 
 //28 ms per 16th note
-#define quickRest 25
-#define rest16 100
-#define rest8 200
-#define rest2 800
-#define NOTE_R 0
+#define quickRest 50
+#define rest16 200
+#define rest8 400
+#define rest2 1600
+
+#define NOTE_E 189.6813354 //659Hz for prescaler 64
+#define NOTE_C 239.0057361 //523Hz
+#define NOTE_G 159.4387755 //784Hz
+#define NOTE_g 318.877551 //392Hz
+#define NOTE_R 0 // Rest, play no sound
+float song[] = {NOTE_E, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_C, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_G, NOTE_R, NOTE_R, NOTE_R, NOTE_R,
+NOTE_R, NOTE_g, NOTE_R};
 
 int time_array[] = {rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
                     rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
@@ -93,60 +139,18 @@ int time_array[] = {rest16, rest16, rest16, quickRest, rest8, rest16, rest16, re
 float stream[] = {D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R,
                   D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R, 
                   D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5, NOTE_R, C6, C6, NOTE_R, NOTE_R};
-void task1() {
-    unsigned long currTime = millis() - startTime;
-    if (currTime % 1000 < 250) {
-        LEDPORT |= BIT4;
-    } else if (currTime % 1000 < 1000) {
-        LEDPORT &= ~BIT4;
-    }
-}
 
-void task2() {
-    unsigned long currTime = millis() - startTime;
-    unsigned long currTimeFromStep = millis() - stepTimeSong;
-    static int bpm = 0;
-    if (sleepCounter > 0 && (currTimeFromStep) > 1000) {
-        sleepCounter--;
-        stepTimeSong = millis();
-    }
-    if (currTimeFromStep > time_array[bpm] && sleepCounter == 0) {
-        TIMER_4_TOP = stream[songIndex++];
-        bpm++;
-        stepTimeSong = millis();
-    }
-    if (songIndex > 44 && sleepCounter == 0) {
-        songIndex = 0;
-        bpm = 0;
-        songCount++;
-    } 
-    if (songCount >= 2 && sleepCounter == 0) {
-        sleepCounter = 4;
-        songCount = 0;
-        stepTimeSong = millis();
-    }
-}
+int songIndex, songCount;
 
 
-void task3() {
-  unsigned long currTimeFromStep = millis() - stepTimeDisplay;
-  if (currTimeFromStep > 100) {
-    int countCopy = displayCounter + 1;
-    for (int i = 0; i < 4; i++) {
-        digits[i] = countCopy % 10;
-        countCopy /= 10;
-    }
-    displayCounter++;
-    stepTimeDisplay = millis();
-  }  
-    for (int i = 0; i < 4; i++)
-    {   
-        DISP_PORT1 &= 0;
-        DISP_PORT2 = disp_select[i];
-        DISP_PORT1 |= disp_digits[digits[i]];
-        DISP_PORT1 |= digits[i];
-        delayMicroseconds(5);
-    }
-    DISP_PORT2 &= 0;
-    DISP_PORT1 &= 0;
-}
+
+void task1();
+void task2();
+void task3();
+void task4_0();
+void task4_1();
+void task4_2();
+void task5();
+
+
+int compare(int, int);
