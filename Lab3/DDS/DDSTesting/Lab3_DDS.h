@@ -127,4 +127,3 @@ void task4_2(void *p);
 void task5(void *p);
 
 
-int compare(int, int);

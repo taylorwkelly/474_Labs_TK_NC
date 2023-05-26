@@ -79,7 +79,6 @@ uint8_t disp_select[4] = {DISP0_BIT, DISP1_BIT, DISP2_BIT, DISP3_BIT};
 extern unsigned long startTime, stepTimeSong, stepTimeDisplay;
 extern int songCount, songIndex, sleepCounter, displayCounter;
 extern int digits[4];
-int compare(int, int);
 
 // We recommend a duration of 100 ms per note
 #define NOTE_E 189.6813354 //659Hz for prescaler 64

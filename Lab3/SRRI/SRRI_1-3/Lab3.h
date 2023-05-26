@@ -64,7 +64,7 @@ uint8_t disp_select[4] = {DISP0_BIT, DISP1_BIT, DISP2_BIT, DISP3_BIT};
 
 extern unsigned long startTime, stepTimeSong, stepTimeDisplay;
 extern int songCount, songIndex, sleepCounter, displayCounter;
-extern int digits[4];
+// extern int digits[4];
 
 // We recommend a duration of 100 ms per note
 // We recommend a duration of 100 ms per note
@@ -78,6 +78,7 @@ extern int digits[4];
 #define G5sharp 150.602
 #define C6 119.503
 #define G5 159.441
+#define NOTE_R 0
 
 //28 ms per 16th note
 #define quickRest 25
@@ -108,8 +109,8 @@ void task2() {
         sleepCounter--;
         stepTimeSong = millis();
     }
-    if (currTimeFromStep > 100 && sleepCounter == 0) {
-        TIMER_4_TOP = song[songIndex++];
+    if (currTimeFromStep > time_array[songIndex] && sleepCounter == 0) {
+        TIMER_4_TOP = stream[songIndex++];
         stepTimeSong = millis();
     }
     if (songIndex > 21 && sleepCounter == 0) {
@@ -126,6 +127,7 @@ void task2() {
 
 void task3() {
   unsigned long currTimeFromStep = millis() - stepTimeDisplay;
+  static int digits[4];
   if (currTimeFromStep > 100) {
     int countCopy = displayCounter + 1;
     for (int i = 0; i < 4; i++) {
@@ -139,8 +141,7 @@ void task3() {
     {   
         DISP_PORT1 &= 0;
         DISP_PORT2 = disp_select[i];
-        // DISP_PORT1 |= disp_digits[digits[i]];
-        DISP_PORT1 |= digits[i];
+        DISP_PORT1 |= disp_digits[digits[i]];
         delayMicroseconds(5);
     }
     DISP_PORT2 &= 0;
