@@ -13,13 +13,14 @@ Task t_task4_0; // Countdown
 Task t_task4_1; // Music play
 Task t_task4_2; // Music freq
 Task t_task5;
+Task t_task6;
 
 Task *t_ptr;
 
 int current_running_task_index, dead_task_index;
 int task_count, dead_count;
 
-Task task_arr[6] = {t_task1, t_task2, t_task3, t_task4_0, t_task4_1, t_task5};
+Task task_arr[7] = {t_task1, t_task2, t_task3, t_task4_0, t_task4_1, t_task5, t_task6};
 
 
 // Contains a pointer to each of the tasks
@@ -78,9 +79,7 @@ void setup() {
   t_task4_0 = {3, "7 Seg Countdown", 0};
   t_task4_1 = {4, "Music Play", 0};
   t_task5 = {5, "Supervisor", 0};
-
-  Task t_task4 = {4, "Count Music w Freq", 0};
-
+  t_task6 = {6, "Smile", 0};
   
   // Adding all the tasks to the pointer list
   // Might need to add address
@@ -128,11 +127,26 @@ void setup() {
   TCB_List[i].task = task_arr[4];
   TCB_List[i].fn = task4_1;
   TCB_List[i].arg_ptr = NULL;
+  TCB_List[i].status = DEAD;
+  TCB_List[i].delay = 0;
+  i++;
+  task_count++;
+
+  TCB_List[i].task = task_arr[5];
+  TCB_List[i].fn = task5;
+  TCB_List[i].arg_ptr = NULL;
   TCB_List[i].status = ACTIVE;
   TCB_List[i].delay = 0;
   i++;
   task_count++;
 
+  TCB_List[i].task = task_arr[6];
+  TCB_List[i].fn = display_smile;
+  TCB_List[i].arg_ptr = NULL;
+  TCB_List[i].status = DEAD;
+  TCB_List[i].delay = 0;
+  i++;
+  task_count++;
   // for(int i; i < 7; i++){
   //   TCB_List[i].task = task_arr[i];
   //   TCB_List[i].fn = func_ptr_list[i];
@@ -230,28 +244,17 @@ void task_start(TCB *task){
 
 void task1() {
     static int time = 0;
-    static int count = 0;
     if (time < 250) {
         digitalWrite(13, HIGH);
     } else if (time < 1000) {
         digitalWrite(13, LOW);
     } else{
       time = 0;
-      count++;
-      //task_self_quit();
     }
     time++;
-    if(count >= 5){
-      time = 0;
-      count = 0;
-      task_self_quit();
-      return;
-    }
 }
 
 void task2() {
-    // Plays the song, then sleeps for 4 seconds
-    //Each note will be 100 ms
     static int time = 0;
     static int bpm = 0;
     // Goes to each note
@@ -267,7 +270,9 @@ void task2() {
     } 
     if (songCount >= 2) {
       songCount = 0;
-      task_self_quit();
+      time = 0;
+      sleep_task(4000);
+      task_start(&TCB_List[5]);
     }
     time++;
 }
@@ -294,8 +299,6 @@ void task3() {
     DISP_PORT2 &= 0;
     DISP_PORT1 &= 0;
 }
-
-
   /*
 Ard.  7-Seg Pin
  29	  11 (A)
@@ -322,7 +325,7 @@ void int_to_seg(int target){
 
 //ID: 3
 
-void sevenSegWrite(int digit) {
+void sevenSeg_Digit_Write(int digit) {
   int start = 29;
   for (int i = 0; i < 7; i++){
     digitalWrite(start, seven_seg_digits[digit][i]);
@@ -339,7 +342,7 @@ void turn_off_display(){
 
 void task4_0(){
   static int time = 0;
-  static int countdown = 5000;
+  static int countdown = 3000;
   if(time = 100){
     int_to_seg(countdown);
     time = 0;
@@ -348,7 +351,7 @@ void task4_0(){
   for (int i = 0; i < 4; i++)
   {
     
-    sevenSegWrite(digits[i]);
+    sevenSeg_Digit_Write(digits[i]);
     digitalWrite(37-i, LOW);
     delayMicroseconds(15);
     digitalWrite(37-i, HIGH);
@@ -358,8 +361,9 @@ void task4_0(){
     time = 0;
     countdown = 5000;
     turn_off_display();
+    task_start(&TCB_List[5]);
     task_self_quit();
-    task_start(&TCB_List[4]);
+    //task_start(&TCB_List[4]);
     return;
   }
 }
@@ -384,7 +388,7 @@ void task4_1(){
   for (int i = 0; i < 4; i++)
   {
     turn_off_display();
-    sevenSegWrite(digits[i]);
+    sevenSeg_Digit_Write(digits[i]);
     digitalWrite(37-i, LOW);
     delayMicroseconds(5);
   }
@@ -415,15 +419,80 @@ controlled by Task 5). The 2 second interval begins after completion of part 5c.
 e) Stop all tasks, except “a) Task 1” in this list.
 
 */
-
-
 //ID:5
 void task5(){
-  if(TCB_List[5].task.timesStarted_Restarted = 0){
-    task_start(&TCB_List[0]);
-    task_start(&TCB_List[1]);
-    TCB_List[5].task.timesStarted_Restarted++;
+  // Gotta be able to time it out
+  // Or need a way to execute the tasks at any given point
+  static int stage = 0;
+  switch(stage){
+    case(0):
+      task_start(&TCB_List[0]);
+      task_start(&TCB_List[1]);
+      task_self_quit();
+      stage++;
+    case(1):
+      quit_task(1);
+      task_start(&TCB_List[3]);
+      task_self_quit();
+      stage++;
+    case(2):
+      quit_task(3);
+      task_start(&TCB_List[1]);
+      task_self_quit();
+      stage++;
+    case(3):
+      quit_task(1);
+      quit_task(3);
+      task_start(&TCB_List[6]);
+      stage++;
+    case(4):
+      quit_task(1);
+      quit_task(2);
+      quit_task(3);
+      quit_task(4);
+      quit_task(6);
+      task_self_quit();
   }
-  if(TCB_List)
+
+
+  if(TCB_List[1].task.timesStarted_Restarted >= 2 && TCB_List[3].task.timesStarted_Restarted == 1){
+    quit_task(1);
+    quit_task(3);
+    task_start(&TCB_List[6]);
+  }
+  else if(TCB_List[1].task.timesStarted_Restarted >= 2){
+    quit_task(1);
+    task_start(&TCB_List[3]);
+  }
+  else if(TCB_List[3].task.timesStarted_Restarted = 1){
+    quit_task(3);
+    task_start(&TCB_List[1]);
+  }
+
+
+
+}
+
+void quit_task(int task_id){
+  TCB_List[task_id].status = DEAD;
+}
+
+void display_smile(){
+  static int countdown = 2000;
+  for (int i = 0; i < 4; i++)
+  {
+    int disp_pin = 37-i;
+    turn_off_display();
+    for(int j = 0; j < 7; j++){
+      digitalWrite(29-j, smile[i][j]);
+    }
+    digitalWrite(disp_pin, LOW);
+    delayMicroseconds(5);
+  }
+  countdown--;
+  if(countdown <= 0){
+    countdown = 2000;
+    task_self_quit();
+  }
 
 }
