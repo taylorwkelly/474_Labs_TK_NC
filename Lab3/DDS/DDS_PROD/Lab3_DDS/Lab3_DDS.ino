@@ -11,7 +11,6 @@
 
 void task_start(TCB *task);
 
-// Defining the Task List, and list for dead tasks
 TCB TCB_List[N_TASKS];
 TCB Dead_Tasks[N_TASKS];
 
@@ -25,7 +24,8 @@ Task t_task4_1; // Play music with frequency
 Task t_task5; //Supervisor
 Task t_task6; // Display Smile
 
-// Global variables for various tasks
+Task *t_ptr;
+
 int current_running_task_index, dead_task_index;
 int task_count, dead_count;
 
@@ -35,8 +35,6 @@ int digits[4] = {0};
 
 void setup() {
   Serial.begin(9600);
-
-  // Setting the various Pins for output
   pinMode(13, OUTPUT);
 
   pinMode(PIN_A, OUTPUT);
@@ -74,7 +72,8 @@ void setup() {
   task_count = 0;
   dead_count = 0;
 
-  //Task ID will be equal to where it is initialized within the Task List
+
+  //Task ID will be equal to where it is initialized within the TASK List
   t_task1 = {0, "LED Flash", 0};
   t_task2 = {1, "Bloody Stream", 0};
   t_task3 = {2, "7 Segment LED", 0};
@@ -84,7 +83,7 @@ void setup() {
   t_task6 = {6, "Smile", 0};
   
 
-  // Initializing all the TCBs. Task 5 Currently Active
+  // Initializing all the TCBs to defaults
   int i = 0;
   TCB_List[i].task = task_arr[0];
   TCB_List[i].fn = task1;
@@ -145,12 +144,12 @@ void setup() {
 
 }
 
-// Loop for the scheduler
 void loop() {
   while(1){
     scheduler();
     delay(1);
   }
+
 }
 
 
@@ -160,8 +159,8 @@ void scheduler(){
   if(TCB_List[current_running_task_index].fn == NULL && current_running_task_index != 0){
     current_running_task_index = 0;
   }
-  // Means that there are no tasks to run, and theres nothing to do
   if(TCB_List[current_running_task_index].fn == NULL && current_running_task_index == 0){
+    // Means that there are no tasks to run, and theres nothing to do
     exit(1);
   } else{
     // Runs the tasks that are active
@@ -170,8 +169,6 @@ void scheduler(){
         case(ACTIVE):
         run_task(TCB_List[current_running_task_index].fn);
 
-        // If a task is sleeping, decrement the sleep counter by 1
-        // If delay is 0, turns the task back on
         case(SLEEPING):
         TCB_List[current_running_task_index].delay -= 1;
         if(TCB_List[current_running_task_index].delay == 0){
@@ -206,14 +203,12 @@ void task_self_quit(){
   
 }
 
-// Takes a Pointer, and starts that task again (from DEAD to ALIVE)
 void task_start(TCB *task){
   task->status = ACTIVE;
   task->task.timesStarted_Restarted++;
 }
 
 // ID = 0
-// LED task
 void task1() {
     static int time = 0;
     static int count = 0;
@@ -229,7 +224,6 @@ void task1() {
 }
 
 // ID = 1
-// Plays the song twice, then sleeps for 4 seconds
 void task2() {
     static int time = 0;
     static int bpm = 0;
@@ -251,7 +245,6 @@ void task2() {
 }
 
 // ID = 2
-// Counts up using the 7 segment display, incrementing every 100 ms
 void task3() {
   unsigned long currTimeFromStep = millis() - stepTimeDisplay;
   if (currTimeFromStep > 100) {
@@ -274,8 +267,9 @@ void task3() {
     DISP_PORT1 &= 0;
 }
 
+
+
 //ID = 3
-// Counts down on the 7 segment display, from 3 to 0 seconds
 void task4_0(){
   static int time = 0;
   static int countdown = 3000;
@@ -286,6 +280,7 @@ void task4_0(){
   }
   for (int i = 0; i < 4; i++)
   {
+    
     sevenSeg_Digit_Write(digits[i]);
     digitalWrite(37-i, LOW);
     delayMicroseconds(15);
@@ -295,15 +290,12 @@ void task4_0(){
     time = 0;
     countdown = 3000;
     turn_off_display();
-    //FOR TASK 4: Add the following line
-    //task_start(&TCB_List[4])
     task_self_quit();
     return;
   }
 }
 
 //ID: 4
-// Plays the song and displays each note's frequency
 void task4_1(){
   static int time = 0;
   static int bpm = 0;
@@ -336,16 +328,20 @@ void task4_1(){
   }
   time++;
 }
+
 /*
-ID:5
-Supervisor task that follows this schedule (from lab document):
+Task 5: This task will be a supervisor that starts and stops other tasks. Perform the tasks
+according to this schedule:
 a) Task 1 runs all the time.
 b) Task 2 runs at the start but stops after playing the theme 2 times.
 c) After Task 2, start a count-down (on the 7-segment display) for 3 seconds
 and then restarts task 2 (original definition above) for one final time.
 d) Display a “smile” for 2 seconds (See Appendix B) (code this as a new task to be
 controlled by Task 5). The 2 second interval begins after completion of part 5c.
-e) Stop all tasks, except “a) Task 1” in this list.   */
+e) Stop all tasks, except “a) Task 1” in this list.
+
+*/
+//ID:5
 void task5(){
   static int stage = 0;
   //5a
@@ -381,8 +377,6 @@ void task5(){
   }
 }
 
-//ID = 6
-// Task to display a smile on the 7 segment display for 2 seconds
 void display_smile(){
   static int countdown = 2000;
   for (int i = 0; i < 4; i++)
@@ -402,8 +396,6 @@ void display_smile(){
 
 }
 
-// Helper function for the 7 segment display
-// Takes an int, converts it into 4 numbers for the display
 void int_to_seg(int target){
   for (int i = 0; i < 4; i++) {
     digits[i] = target % 10;
@@ -411,7 +403,6 @@ void int_to_seg(int target){
   }
 }
 
-// Takes in a number, and writes it to the 7 segment display
 void sevenSeg_Digit_Write(int digit) {
   int start = 29;
   for (int i = 0; i < 7; i++){
@@ -420,7 +411,6 @@ void sevenSeg_Digit_Write(int digit) {
   }
 }
 
-// Resets the 7 segment display
 void turn_off_display(){
   digitalWrite(SEG_DISP4, HIGH);
   digitalWrite(SEG_DISP3, HIGH);
