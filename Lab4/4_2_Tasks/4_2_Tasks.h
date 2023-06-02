@@ -1,3 +1,10 @@
+#define LED_OFFBOARD 13
+
+// PySerial to get output from computer to SErial monitor, running python script from computer
+// Output data from computer into serial
+// ChatGPT to generate the words
+
+
 #define BIT0 1;
 #define BIT1 (1 << 1);
 #define BIT2 (1 << 2);
@@ -6,13 +13,6 @@
 #define BIT5 (1 << 5);
 #define BIT6 (1 << 6);
 #define BIT7 (1 << 7);
-
-#define ACTIVE 0
-#define DELAYED 1
-#define HALTED 2
-#define SLEEPING 3
-
-#define N_TASKS 10
 
 #define TIMER_ALLOW PRR0
 #define TIMER_ALLOW_BIT PRTIM0
@@ -27,63 +27,6 @@
 #define DATA_DIRECTION_REG_SPKR DDRH
 #define TIMER_4_CTRL_REG_A_MASK 67 // 01000011
 #define TIMER_4_CTRL_REG_B_MASK 27 // 00011011
-
-#define TIMER_CTRL_REG 
-
-#define DISP_PORT1 PORTA
-#define DISP_PORT2 PORTC
-
-#define DISP_DDR1 DDRA
-#define DISP_DDR2 DDRC
-#define DISP_DDR1_MASK 0xFF // 11111111
-#define DISP_DDR2_MASK 0x0F // 00001111
-
-#define DISP0_BIT B00001110
-#define DISP1_BIT B00001101 
-#define DISP2_BIT B00001011 
-#define DISP3_BIT B00000111
-
-#define SEG_ZERO B11111100
-#define SEG_ONE B01100000
-#define SEG_TWO B11011010
-#define SEG_THREE B11110010
-#define SEG_FOUR B01100110
-#define SEG_FIVE B10110110
-#define SEG_SIX B10111110
-#define SEG_SEVEN B11100100 
-#define SEG_EIGHT B11111110
-#define SEG_NINE B11100110
-
-
-int disp_digits[10] = {SEG_ZERO, SEG_ONE, SEG_TWO, SEG_THREE, SEG_FOUR, SEG_FIVE, SEG_SIX, SEG_SEVEN, SEG_EIGHT, SEG_NINE};
-uint8_t disp_select[4] = {DISP0_BIT, DISP1_BIT, DISP2_BIT, DISP3_BIT};
-
-
-/*
-Pins for the display setup
-22: Dot
-23: G
-24: F
-25 E
-26 D
-27 C
-28 B
-29 A
-
-
-34: Display 4
-35 Disp 3
-36 Disp 2
-37 Disp 1
-*/
-
-
-unsigned long stepTimeDisplay;
-int displayCounter;
-// We recommend a duration of 100 ms per note
-//Notes for bloody stream
-
-//targ_freq = 16000000/(2*N * TOP)  n is prescalar, top is frequency value
 
 #define D5 212.947
 #define F5 179.083
@@ -103,8 +46,8 @@ int displayCounter;
 #define NOTE_G 159.4387755 //784Hz
 #define NOTE_g 318.877551 //392Hz
 #define NOTE_R 0 // Rest, play no sound
-float song[] = {NOTE_E, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_C, NOTE_R, NOTE_E, NOTE_R, NOTE_R, NOTE_G, NOTE_R, NOTE_R, NOTE_R, NOTE_R,
-NOTE_R, NOTE_g, NOTE_R};
+
+int songIndex, songCount;
 
 int time_array[] = {rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
                     rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
@@ -114,16 +57,8 @@ float stream[] = {D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, 
                   D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R, 
                   D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5, NOTE_R, C6, C6, NOTE_R, NOTE_R};
 
-int songIndex, songCount;
 
-
-
-void task1();
-void task2();
-void task3();
-void task4_0(void *p);
-void task4_1(void *p);
-void task4_2(void *p);
-void task5(void *p);
-
-
+void offBoardLED_task(void *parameters);
+void bloodyStream_task(void *parameters);
+void FFT_task(void *parameters);
+void dataRead_FFT_task(void *parameters);
