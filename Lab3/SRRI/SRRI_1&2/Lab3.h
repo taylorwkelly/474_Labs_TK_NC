@@ -12,7 +12,7 @@
 #define HALTED 2
 #define SLEEPING 3
 
-#define LEDPORT PORTH // Contains Pin13 in Bit position 7
+#define LEDPORT PORTH // Contains PIN7 in Port 4
 #define LED_DATA_DIR_REG DDRH
 
 #define TIMER_4_CTRL_REG_A TCCR4A

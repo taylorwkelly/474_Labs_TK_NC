@@ -11,7 +11,7 @@
 #define T3CTRLB_MASK B00011011
 
 // prescaler 64 
-#define hz500 250
+#define hz500 500
 
 #define READY 0
 #define RUNNING 1
@@ -84,7 +84,7 @@ void task2SRRI() {
     }
     if (songCount >= 2){
         songCount = 0;
-        sleep_474(8000);
+        sleep_474(4000);
     }
 }
 
