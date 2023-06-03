@@ -1,4 +1,4 @@
-#include <Arduino_FreeRTOS.h>
+#include "..\RTOS\Arduino_FreeRTOS\src\Arduino_FreeRTOS.h"
 
 #define X_INPUT A0
 #define Y_INPUT A1
