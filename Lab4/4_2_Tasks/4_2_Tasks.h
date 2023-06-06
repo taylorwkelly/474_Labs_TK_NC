@@ -1,9 +1,15 @@
-#define LED_OFFBOARD 13
+#include <Arduino_FreeRTOS.h>
+#include <queue.h>  // Not really sure why the freertos won't read queues
+#include <arduinoFFT.h>
+#include <stdlib.h>
+
+#define LED_OFFBOARD 12
 
 // PySerial to get output from computer to SErial monitor, running python script from computer
 // Output data from computer into serial
 // ChatGPT to generate the words
 
+#define samples 64
 
 #define BIT0 1;
 #define BIT1 (1 << 1);
@@ -49,9 +55,9 @@
 
 int songIndex, songCount;
 
-int time_array[] = {rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
-                    rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
-                    rest16, rest16, rest16, quickRest, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest2, rest16, rest16};
+int time_array[] = {rest16, rest16, rest16, rest16, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
+                    rest16, rest16, rest16, rest16, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest8, rest16, rest16,
+                    rest16, rest16, rest16, rest16, rest8, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest16, rest2, rest16, rest16};
 
 float stream[] = {D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R,
                   D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, F5,  G5, NOTE_R, 
@@ -60,5 +66,7 @@ float stream[] = {D5, F5, A5, NOTE_R, G5sharp, D5,  G5, NOTE_R, G5, NOTE_R, D5, 
 
 void offBoardLED_task(void *parameters);
 void bloodyStream_task(void *parameters);
-void FFT_task(void *parameters);
-void dataRead_FFT_task(void *parameters);
+void FFT_task_3_0(void *parameters);
+void FFT_task_3_1(void *parameters);
+void dataRead_FFT(void *parameters);
+
