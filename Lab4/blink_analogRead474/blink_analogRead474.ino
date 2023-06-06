@@ -1,4 +1,5 @@
 #include <Arduino_FreeRTOS.h>
+#include <queue.h>
 
 ////////////////////////////////////////////////
 // APPROVED FOR ECE 474   Spring 2021
@@ -11,9 +12,10 @@
 void TaskBlink( void *pvParameters );
 void TaskAnalogRead( void *pvParameters );
 
+QueueHandle_t queue;
 // the setup function runs once when you press reset or power the board
 void setup() {
-  
+  int sensor_val = 500;
   // initialize serial communication at 9600 bits per second:
   Serial.begin(19200);
   
@@ -21,6 +23,8 @@ void setup() {
     ; // wait for serial port to connect. Needed for native USB, on LEONARDO, MICRO, YUN, and other 32u4 based boards.
   } 
 
+  queue = xQueueCreate(2, sizeof(int));
+  xQueueSendToBack(queue, &sensor_val, 0);
   // Now set up two tasks to run independently.
   xTaskCreate(
     TaskBlink
@@ -87,10 +91,12 @@ void TaskBlink(void *pvParameters)  // This is a task.
 
   for (;;) // A Task shall never return or exit.
   {
+    int value;
+    xQueueReceive(queue, &value, 0);
     digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-    vTaskDelay( 1000 / portTICK_PERIOD_MS ); // wait for one second
+    vTaskDelay( value / portTICK_PERIOD_MS ); // wait for one second
     digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-    vTaskDelay( 1000 / portTICK_PERIOD_MS ); // wait for one second
+    vTaskDelay( value / portTICK_PERIOD_MS ); // wait for one second
   }
 }
 
@@ -106,13 +112,13 @@ void TaskAnalogRead(void *pvParameters)  // This is a task.
 
   This example code is in the public domain.
 */
-
   for (;;)
   {
     // read the input on analog pin 0:
-    int sensorValue = analogRead(A0);  /// modify for your input pin!
+    int sensor_val = analogRead(A0);  /// modify for your input pin!
     // print out the value you read:
-    Serial.println(sensorValue);
-    vTaskDelay(500/portTICK_PERIOD_MS);  // 0.5 sec in between reads for stability
+    Serial.println(sensor_val);
+    xQueueSendToBack(queue, &sensor_val, 0);
+    vTaskDelay(20/portTICK_PERIOD_MS);  // 0.5 sec in between reads for stability
   }
 }
