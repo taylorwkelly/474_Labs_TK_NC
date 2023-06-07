@@ -194,7 +194,7 @@ void LCDControl(void* pvParameters) {
                 lcd.print(message_split[i]);
                 lcd.setCursor(0, 1);
                 lcd.print(message_split[i + 1]);
-                vTaskDelay(1000 / portTICK_PERIOD_MS);
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
             }
             lcd.clear();
             }
