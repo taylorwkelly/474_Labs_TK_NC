@@ -134,22 +134,29 @@ void LCDControl(void* pvParameters) {
         while (num_selected < 5) {
             xQueueReceive(scrollQueue, &value, 1);
             xQueueReceive(lcdQueue, &select, 1);
+            // Joystick to the right selects the word
             if (select > 980) {
                 selected[num_selected] = adjectives[index];
                 num_selected++;
             }
+            // Determines which way to scroll, up or down
             int up = value > 980 ? 1 : 0;
             int down = value < 95 ? 1 : 0;
 
+            // Moves the 
             if (up && !down) {
                 index++;
             } else if (down && !up) {
                 index--;
             }
 
+            // Wraps aroud the array to start the array over
             if (index > 90) index = 0;
             else if (index < 0) index = 90;
 
+
+            // Displays the current and next word on the display
+            // Checks the edge case of the end of the array as well
             lcd.setCursor(0,0);
             lcd.print(adjectives_lcd[index]);
             lcd.setCursor(0,1);
@@ -159,6 +166,7 @@ void LCDControl(void* pvParameters) {
             lcd.setCursor(15, 0);
             lcd.blink();
             vTaskDelay(50 / portTICK_PERIOD_MS);
+            // Resets the queue values
             value = 500;
             select = 0;
         }
