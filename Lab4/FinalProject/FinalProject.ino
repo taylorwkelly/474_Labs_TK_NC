@@ -17,13 +17,6 @@ int LED1 = PIN12, LED2 = PIN11, LED3 = PIN10, LED4 = PIN9, LED5 = PIN8;
 QueueHandle_t scrollQueue, lcdQueue, ledQueue;
 
 void setup() {
-    Serial.begin(115200);
-
-    while (!Serial) {
-        ;
-    }
-
-
     scrollQueue = xQueueCreate(2, sizeof(int));
     lcdQueue = xQueueCreate(2, sizeof(int));
     ledQueue = xQueueCreate(2, sizeof(int));
@@ -78,6 +71,37 @@ void setup() {
     vTaskStartScheduler();
 }
 void loop() { /*no looping?*/  }
+
+
+String sendToPython(char* selections[5]) {
+    Serial.begin(19200);
+
+    while (!Serial) {
+        ;
+    }
+
+    Serial.write("Requesting Pair\n");
+
+    while (Serial.available() > 0) {
+        String str = Serial.readStringUntil('\n');
+        if (str == "Paired") break;
+    }
+    
+    
+    String inbytes = "";
+    char message[100];
+    snprintf(message, 100, "%s %s %s %s %s\n", selections[0],
+    selections[1], selections[2], selections[3], selections[4]);
+
+    Serial.write(message);
+
+    while(Serial.available() > 0) {
+        inbytes = Serial.readStringUntil('\n');
+        if (inbytes != "") break;
+    }
+    Serial.end();
+    return inbytes;
+}
 
 void LEDControl(void* pvParameters) {
     int num_selected = 0;
@@ -140,11 +164,12 @@ void LCDControl(void* pvParameters) {
         }
         if (displayed == 0) {
             lcd.noBlink();
-            char message[100];
-            snprintf(message, 100, "You are %sand %sand %sand %sand %s", selected[0], selected[1], selected[2],
-                                                            selected[3], selected[4]);
+            // char message[100];
+            // snprintf(message, 100, "You are %sand %sand %sand %sand %s", selected[0], selected[1], selected[2],
+            //                                                 selected[3], selected[4]);
+            String message = sendToPython(selected);
             int len = 0;
-            char* temp = message;
+            char* temp = message.begin();
             while (*temp != '\0') {
                 len++;
                 temp += 1;
