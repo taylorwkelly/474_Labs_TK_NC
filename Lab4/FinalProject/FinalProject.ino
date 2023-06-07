@@ -96,13 +96,14 @@ String sendToPython(char* selections[5]) {
     Serial.println(message);
 
     Serial.println("Done");
-
+    String result = "";
     while(1) {
         inbytes = Serial.readStringUntil('\n');
-        if (inbytes != "Done") break;
+        if (inbytes == "Done") break;
+        result += inbytes;
     }
     Serial.end();
-    return inbytes;
+    return result;
 }
 
 void LEDControl(void* pvParameters) {
@@ -140,8 +141,8 @@ void LCDControl(void* pvParameters) {
                 selected[num_selected] = adjectives[index];
                 num_selected++;
             }
-            int up = value > 980 ? 1 : 0;
-            int down = value < 95 ? 1 : 0;
+            int down = value > 980 ? 1 : 0;
+            int up = value < 95 ? 1 : 0;
 
             if (up && !down) {
                 index++;
@@ -170,18 +171,13 @@ void LCDControl(void* pvParameters) {
             // snprintf(message, 100, "You are %sand %sand %sand %sand %s", selected[0], selected[1], selected[2],
             //                                                 selected[3], selected[4]);
             String message = sendToPython(selected);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            int len = 0;
-            char* temp = message.begin();
-            while (*temp != '\0') {
-                len++;
-                temp += 1;
-            }
+           
+            int len = message.length();
             int layers = (len / 16) + 1;
             char message_split[layers][17];
             for (int i = 0; i < layers; i++) {
                 for (int j = 0; j < 16; j++) {
-                    if (i*16 + j > 100) {
+                    if (i*16 + j > len) {
                         char* space = " ";
                         message_split[i][j] = *space;
                     } else {
