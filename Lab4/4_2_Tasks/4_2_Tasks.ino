@@ -8,8 +8,7 @@ QueueHandle_t queue2;
 TaskHandle_t task_3_1_handle;
 TaskHandle_t task_4_handle;
 
-double data[samples];
-double* pdata;
+//double* pdata;
 
 void setup() {
 
@@ -127,7 +126,11 @@ void bloodyStream_task(void *parameters){
   }
 
 }
+
+// Probably don't need to send all the data from here, though it does help with separating memory allocated
+
 void FFT_task_3_0(void *parameters){
+  double data[samples];
   vTaskDelay(200 / portTICK_PERIOD_MS);
   while(1){
     //array of N pseudo random doubles
@@ -136,7 +139,8 @@ void FFT_task_3_0(void *parameters){
     }
 
     // Initializes a queue, which can hold a double
-    queue1 = xQueueCreate(64, sizeof(double));
+    queue1 = xQueueCreate(2, sizeof(double));
+    xQueueSendToBack(queue1, (void*) data, 1);
     // Calls FFT_task_3_1, and halts self
     vTaskResume(task_3_1_handle);
     vTaskSuspend(NULL);
@@ -151,7 +155,7 @@ void FFT_task_3_1(void *parameters){
     for(int i = 0; i < 5; i++){
       float time_dataBack;
       // Send a pointer to the data to the queue
-      xQueueSendToBack(queue1, (void *) &data, 1);
+      //xQueueSendToBack(queue1, &data, 1);
       // Wait for data to come from the 2nd queue to resume
       vTaskResume(task_4_handle);
       vTaskSuspend(NULL);
@@ -166,16 +170,15 @@ void FFT_task_3_1(void *parameters){
 void dataRead_FFT(void *parameters){
   double vReal[samples];
   double vImag[samples];
-  double* dataPoint;
+  double* dataP;
   arduinoFFT fft = arduinoFFT(); /* Create FFT object */
   Serial.println(uxTaskGetStackHighWaterMark( NULL ));
   vTaskSuspend(NULL);
   while(1){
-    xQueueReceive(queue2, &dataPoint, 1);
+    xQueueReceive(queue1, dataP, 1);
     // The queue system is currently not working
     for(int i = 0; i<samples; i++){
-      Serial.println(*dataPoint);
-      vReal[i] = *dataPoint;
+      vReal[i] = *dataP;
       vImag[i] = 0.0;
     }
     // Now need to measure the wall clock time
@@ -187,19 +190,4 @@ void dataRead_FFT(void *parameters){
   }
 
 }
-
-/*
-//Number of signal cycles that the sampling will read
-double cycles = (((samples-1) * signalFrequency) / samplingFrequency);
-double vReal[N_SAMPLES];
-double vImag[N_SAMPLES];
-for (uint16_t i = 0; i < samples; i++) {
-// sine wave
-vReal[i] = int8_t((amplitude * (sin((i * (twoPi * cycles)) / samples))) / 2.0);
-//Imaginary part must be zeroed in case of looping to avoid wrong calculations and overflows
-vImag[i] = 0.0;
-}
-arduinoFFT fft = arduinoFFT(); /* Create FFT object */
-//fft.Compute(vReal, vImag, samples, N_SAMPLES, FFT_FORWARD);
-
 
