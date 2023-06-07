@@ -2,6 +2,7 @@
 #include <queue.h>  // Not really sure why the freertos won't read queues
 #include <arduinoFFT.h>
 #include <stdlib.h>
+#include <task.h>
 
 #define LED_OFFBOARD 12
 
@@ -9,7 +10,7 @@
 // Output data from computer into serial
 // ChatGPT to generate the words
 
-#define samples 64
+#define samples 256
 
 #define BIT0 1;
 #define BIT1 (1 << 1);

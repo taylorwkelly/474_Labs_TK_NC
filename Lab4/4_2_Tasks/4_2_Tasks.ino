@@ -1,18 +1,20 @@
 #include "4_2_Tasks.h"
 
+// Initializing global variables like queues, handles, and FFT data
 QueueHandle_t queue1;
 QueueHandle_t queue2;
-
-//queue2 = xQueueCreate(2, sizeof(int));
 
 TaskHandle_t task_3_1_handle;
 TaskHandle_t task_4_handle;
 
 double data[samples];
-double* pdata;
+double *dataPoint = data;
 
+// Setup function
 void setup() {
 
+  queue1 = xQueueCreate(2, sizeof(double *));
+  queue2 = xQueueCreate(2, sizeof(unsigned long));
   // put your setup code here, to run once:
   Serial.begin(19200);
 
@@ -35,15 +37,15 @@ void setup() {
   xTaskCreate(
     bloodyStream_task, //Function for task
     "Bloody Stream",   //Name of task
-    100,              //Stack size
+    128,              //Stack size
     NULL,             //Parameters
-    4,                //Priority
+    2,                //Priority
     NULL);            //Handle
 
    xTaskCreate(
     FFT_task_3_0, //Function for task
     "RT3pt0",   //Name of task
-    100,              //Stack size
+    128,              //Stack size
     NULL,             //Parameters
     1,                //Priority
     NULL);            //Handle
@@ -54,15 +56,15 @@ void setup() {
     "RT3pt1",   //Name of task
     128,              //Stack size
     NULL,             //Parameters
-    4,                //Priority
+    5,                //Priority
     &task_3_1_handle);            //Handle
 
    xTaskCreate(
     dataRead_FFT, //Function for task
     "RT4",   //Name of task
-    2500,              //Stack size
+    3500,              //Stack size
     NULL,             //Parameters
-    5,                //Priority
+    4,                //Priority
     &task_4_handle);            //Handle
 
 
@@ -134,72 +136,59 @@ void FFT_task_3_0(void *parameters){
     for(int i = 0; i < samples; i++){
       data[i] = 0.0 + ((double) rand()) / RAND_MAX;
     }
-
-    // Initializes a queue, which can hold a double
-    queue1 = xQueueCreate(64, sizeof(double));
     // Calls FFT_task_3_1, and halts self
     vTaskResume(task_3_1_handle);
     vTaskSuspend(NULL);
   }
 }
 void FFT_task_3_1(void *parameters){
-  // Need a second queue to signal FFT completion
-  queue2 = xQueueCreate(1, sizeof(float));
   vTaskSuspend(NULL);
   while(1){
     // run loop 5 times
     for(int i = 0; i < 5; i++){
-      float time_dataBack;
+      unsigned long temp;
       // Send a pointer to the data to the queue
-      xQueueSendToBack(queue1, (void *) &data, 1);
+      xQueueSendToBack(queue1, &dataPoint, 1);
       // Wait for data to come from the 2nd queue to resume
       vTaskResume(task_4_handle);
-      vTaskSuspend(NULL);
-
-      xQueueReceive(queue2, &time_dataBack, 0);
-      //Serial.println()
+      while(eTaskGetState(task_4_handle) != eSuspended){
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+      }
+      //vTaskSuspend()
+      xQueueReceive(queue2, &temp, 0);
+      Serial.println("Computation time:");
+      Serial.println(temp);
     }
+    
     vTaskSuspend(task_4_handle);
+    vTaskSuspend(NULL);
   }
 }
 
 void dataRead_FFT(void *parameters){
   double vReal[samples];
   double vImag[samples];
-  double* dataPoint;
+  double* fromData;
   arduinoFFT fft = arduinoFFT(); /* Create FFT object */
-  Serial.println(uxTaskGetStackHighWaterMark( NULL ));
+  //Serial.println(uxTaskGetStackHighWaterMark( NULL ));
   vTaskSuspend(NULL);
   while(1){
-    xQueueReceive(queue2, &dataPoint, 1);
+    xQueueReceive(queue2, &fromData, 1);
     // The queue system is currently not working
     for(int i = 0; i<samples; i++){
-      Serial.println(*dataPoint);
-      vReal[i] = *dataPoint;
+      vReal[i] = *(dataPoint+i);
       vImag[i] = 0.0;
     }
     // Now need to measure the wall clock time
-    //Serial.println(uxTaskGetStackHighWaterMark( NULL ));
+    unsigned long start = millis();
     fft.Compute(vReal, vImag, samples, FFT_FORWARD);
+    start = millis() - start;
     //Serial.println(uxTaskGetStackHighWaterMark( NULL ));
-    vTaskResume(task_3_1_handle);
+    xQueueSendToBack(queue2, &start, 0);
+    //vTaskResume(task_3_1_handle);
     vTaskSuspend(NULL);
   }
 
 }
-
-/*
-//Number of signal cycles that the sampling will read
-double cycles = (((samples-1) * signalFrequency) / samplingFrequency);
-double vReal[N_SAMPLES];
-double vImag[N_SAMPLES];
-for (uint16_t i = 0; i < samples; i++) {
-// sine wave
-vReal[i] = int8_t((amplitude * (sin((i * (twoPi * cycles)) / samples))) / 2.0);
-//Imaginary part must be zeroed in case of looping to avoid wrong calculations and overflows
-vImag[i] = 0.0;
-}
-arduinoFFT fft = arduinoFFT(); /* Create FFT object */
-//fft.Compute(vReal, vImag, samples, N_SAMPLES, FFT_FORWARD);
 
 
