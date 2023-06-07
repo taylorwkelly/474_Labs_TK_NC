@@ -201,8 +201,6 @@ void LCDControl(void* pvParameters) {
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
             }
             lcd.clear();
-            lcd.setCursor(0,0);
-            lcd.println("Finished");
             }
             displayed = 1;
     }
