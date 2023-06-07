@@ -80,9 +80,9 @@ String sendToPython(char* selections[5]) {
         ;
     }
 
-    Serial.write("Requesting Pair\n");
+    Serial.println("Requesting Pair");
 
-    while (Serial.available() > 0) {
+    while (1) {
         String str = Serial.readStringUntil('\n');
         if (str == "Paired") break;
     }
@@ -90,14 +90,16 @@ String sendToPython(char* selections[5]) {
     
     String inbytes = "";
     char message[100];
-    snprintf(message, 100, "%s %s %s %s %s\n", selections[0],
+    snprintf(message, 100, "%s %s %s %s %s", selections[0],
     selections[1], selections[2], selections[3], selections[4]);
 
-    Serial.write(message);
+    Serial.println(message);
 
-    while(Serial.available() > 0) {
+    Serial.println("Done");
+
+    while(1) {
         inbytes = Serial.readStringUntil('\n');
-        if (inbytes != "") break;
+        if (inbytes != "Done") break;
     }
     Serial.end();
     return inbytes;
@@ -168,6 +170,7 @@ void LCDControl(void* pvParameters) {
             // snprintf(message, 100, "You are %sand %sand %sand %sand %s", selected[0], selected[1], selected[2],
             //                                                 selected[3], selected[4]);
             String message = sendToPython(selected);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
             int len = 0;
             char* temp = message.begin();
             while (*temp != '\0') {
@@ -198,6 +201,8 @@ void LCDControl(void* pvParameters) {
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
             }
             lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.println("Finished");
             }
             displayed = 1;
     }
