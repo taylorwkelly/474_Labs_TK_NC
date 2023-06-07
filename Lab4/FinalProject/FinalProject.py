@@ -1,7 +1,7 @@
 import serial
 import openai
 
-key = "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"
+key = "insert key here"
 sConnection = ""
 def waitForArduino():
     while sConnection.readLine() != "Requesting Pair":
@@ -23,7 +23,8 @@ def receiveFromArduino():
 
 def promptGPT(str):
     openai.api_key = key
-    return openai.Complete.create(model="gpt-3.5-turbo", prompt=str, temperature=0, max_tokens=10)
+    prompt = "Please make a sentence about a person in the 3rd person style using these words: " + str
+    return openai.Complete.create(model="gpt-3.5-turbo", prompt=prompt, temperature=0, max_tokens=10)
 
 def program():
     sConnection = serial.Serial()
