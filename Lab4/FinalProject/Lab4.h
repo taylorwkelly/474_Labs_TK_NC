@@ -26,14 +26,16 @@
 #define PIN6 6
 #define PIN5 5
 
+#define XVALUEPIN A0
+#define YVALUEPIN A1
 
 
 
-char* adjectives[100] = {
+char* adjectives[91] = {
     "Adventurous ", "Amazing ", "Amiable ", "Awesome ", "Balanced ", "Blissful ", "Brilliant ", "Caring ", "Cheerful ", "Creative ", "Dazzling ", "Delightful ", "Dynamic ", "Eager ", "Effervescent ", "Enthusiastic ", "Faithful ", "Fearless ", "Friendly ", "Fulfilled ", "Gentle ", "Genuine ", "Gracious ", "Grateful ", "Happy ", "Harmonious ", "Heartfelt ", "Innovative ", "Inspiring ", "Jolly ", "Joyful ", "Joyous ", "Jubilant ", "Keen ", "Kind ", "Kindhearted ", "Kindred ", "Liberal ", "Lively ", "Loving ", "Lucky ", "Magnificent ", "Modest ", "Motivating ", "Motivated ", "Natural ", "Nifty ", "Noble ", "Nurturing ", "Optimal ", "Optimistic ", "Original ", "Passionate ", "Patient ", "Peaceful ", "Positive ", "Quaint ", "Quick ", "Quick-witted ", "Quirky ", "Radiant ", "Rejuvenating ", "Reliable ", "Resilient ", "Satisfied ", "Sincere ", "Spirited ", "Sunny ", "Talented ", "Thoughtful ", "Thriving ", "Tranquil ", "Understanding ", "Unstoppable ", "Upbeat ", "Upstanding ", "Valuable ", "Versatile ", "Vibrant ", "Vivacious ", "Wholesome ", "Wise ", "Wonderful ", "Wondrous ", "Xenial ", "Xtraordinary ", "Yearning ", "Youthful ", "Zealotic ", "Zealous ", "Zestful "
 };
 
-char* adjectives_lcd[100] = {
+char* adjectives_lcd[91] = {
     "Adventurous    ",
 "Amazing        ",
 "Amiable        ",

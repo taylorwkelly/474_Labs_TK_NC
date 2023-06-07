@@ -1,112 +1,213 @@
 #include "Lab4.h"
 #include <queue.h>
+
+
+void LEDControl(void*);
+void LCDControl(void*);
+void ScrollHandler(void*);
+void SelectHandler(void*);
+
+
 int rs = PIN22, enable = PIN23, d0 = PIN24, d1 = PIN25, d2 = PIN26, d3 = PIN27,
 d4 = PIN28, d5 = PIN29, d6 = PIN30, d7 = PIN31;
 LiquidCrystal lcd(rs, enable, d0, d1, d2, d3, d4, d5, d6, d7);
 
 int LED1 = PIN12, LED2 = PIN11, LED3 = PIN10, LED4 = PIN9, LED5 = PIN8;
 
-int UPBTN = PIN7, DWNBTN = PIN6, SCTBTN = PIN5;
-
-int index;
+QueueHandle_t scrollQueue, lcdQueue, ledQueue;
 
 void setup() {
+    Serial.begin(115200);
+
+    while (!Serial) {
+        ;
+    }
+
+
+    scrollQueue = xQueueCreate(2, sizeof(int));
+    lcdQueue = xQueueCreate(2, sizeof(int));
+    ledQueue = xQueueCreate(2, sizeof(int));
+    int joyVal = 500;
+    int ledVal = 0;
+    xQueueSendToBack(ledQueue, &ledVal, 0);
+    xQueueSendToBack(lcdQueue, &joyVal, 0);
+    xQueueSendToBack(scrollQueue, &joyVal, 0);
     lcd.begin(16,2);
     lcd.clear();
 
-    pinMode(LED1, OUTPUT);
-    pinMode(LED2, OUTPUT);
-    pinMode(LED3, OUTPUT);
-    pinMode(LED4, OUTPUT);
-    pinMode(LED5, OUTPUT);
+    int led_pins[5] = {LED1, LED2, LED3, LED4, LED5};
+    for (int pin = 0; pin < 5; pin++) 
+        pinMode(led_pins[pin], OUTPUT);
 
-    pinMode(UPBTN, INPUT_PULLUP);
-    pinMode(DWNBTN, INPUT_PULLUP);
-    pinMode(SCTBTN, INPUT_PULLUP);
-    index = 0;
+    xTaskCreate(
+        LEDControl,
+        "LED Controller",
+        128,
+        NULL,
+        0,
+        NULL
+    );
 
+    xTaskCreate(
+        ScrollHandler,
+        "X Value Reader",
+        128,
+        NULL,
+        3,
+        NULL
+    );
 
-        int numWords = 0;
+    xTaskCreate(
+        SelectHandler,
+        "Y Value Reader",
+        128,
+        NULL,
+        3,
+        NULL
+    );
+
+    xTaskCreate(
+        LCDControl,
+        "LCD Controller",
+        1024,
+        NULL,
+        0,
+        NULL
+    );
+    
+    vTaskStartScheduler();
+}
+void loop() { /*no looping?*/  }
+
+void LEDControl(void* pvParameters) {
+    int num_selected = 0;
+    int leds[5] = {LED1, LED2, LED3, LED4, LED5};
+    int value;
+    for (;;) {
+        while (num_selected < 5) {
+            xQueueReceive(ledQueue, &value, 0);
+            num_selected += value > 980 ? 1 : 0;
+            for (int led = 0; led < 5; led++) {
+                if (num_selected > led) {
+                    digitalWrite(leds[led], LOW);
+                } else {
+                    digitalWrite(leds[led], HIGH);
+                }
+            }
+            value = 0;
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+    }
+}
+
+void LCDControl(void* pvParameters) {
+    int index = 0, num_selected = 0;
     char* selected[5];
-    int leds_to_turn_on[5] = {LED1, LED2, LED3, LED4, LED5};
-    while (numWords < 5) {
-
-        delay(50);
-
-        int up = digitalRead(UPBTN);
-        int down = digitalRead(DWNBTN);
-        int select = digitalRead(SCTBTN);
-
-        delay(50);
-
-        if (index > 99) index = 0;
-        else if (index < 0) index = 99;
-
-        delay(50);
-
-        lcd.setCursor(0,0);
-        lcd.print(adjectives_lcd[index]);
-        lcd.setCursor(0,1);
-        lcd.print(adjectives_lcd[(index + 1 > 99) ? 0 : (index + 1)]);
-        lcd.setCursor(14, 0);
-        lcd.print("<-");
-
-        delay(100);
-
-        for (int i = numWords; i < 5; i++) {
-            digitalWrite(leds_to_turn_on[i], HIGH);
-        }
-
-        delay(50);
-
-        if (select) {
-            selected[numWords++] = adjectives[index];
-            for (int i = 0; i < numWords; i++) {
-                digitalWrite(leds_to_turn_on[i], LOW);
+    int value;
+    int select;
+    int displayed = 0;
+    for (;;) {
+        while (num_selected < 5) {
+            xQueueReceive(scrollQueue, &value, 1);
+            xQueueReceive(lcdQueue, &select, 1);
+            if (select > 980) {
+                selected[num_selected] = adjectives[index];
+                num_selected++;
             }
-        } else if (up && !down) {
-            index++;
-        } else if (down && !up) {
-            index--;
-        }
-        delay(50);
-        up = down = select = 0;
-        delay(50);
-    }
-    char message[100];
-    snprintf(message, 100, "You are %sand %sand %sand %sand %s", selected[0], selected[1], selected[2],
-                                                        selected[3], selected[4]);
-    
-    char message_split[7][17] = {"","","","","","",""};
-    for (int i = 0; i < 7; i++) {
-        for (int j = 0; j < 16; j++) {
-            if (i*16 + j > 100) {
-                char* space = " ";
-                message_split[i][j] = *space;
-            } else {
-                message_split[i][j] = message[i*16 + j];
+            int up = value > 980 ? 1 : 0;
+            int down = value < 95 ? 1 : 0;
+
+            if (up && !down) {
+                index++;
+            } else if (down && !up) {
+                index--;
             }
+
+            if (index > 90) index = 0;
+            else if (index < 0) index = 90;
+
+            lcd.setCursor(0,0);
+            lcd.print(adjectives_lcd[index]);
+            lcd.setCursor(0,1);
+            lcd.print(adjectives_lcd[(index + 1 > 90) ? 0 : index + 1]);
+            lcd.setCursor(14, 0);
+            lcd.print("<");
+            lcd.setCursor(15, 0);
+            lcd.blink();
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+            value = 500;
+            select = 0;
         }
-        message_split[i][16] = '\0';
+        if (displayed == 0) {
+            lcd.noBlink();
+            char message[100];
+            snprintf(message, 100, "You are %sand %sand %sand %sand %s", selected[0], selected[1], selected[2],
+                                                            selected[3], selected[4]);
+            int len = 0;
+            char* temp = message;
+            while (*temp != '\0') {
+                len++;
+                temp += 1;
+            }
+            int layers = (len / 16) + 1;
+            char message_split[layers][17];
+            for (int i = 0; i < layers; i++) {
+                for (int j = 0; j < 16; j++) {
+                    if (i*16 + j > 100) {
+                        char* space = " ";
+                        message_split[i][j] = *space;
+                    } else {
+                        message_split[i][j] = message[i*16 + j];
+                    }
+                }
+                message_split[i][16] = '\0';
+            }
+            lcd.clear();        
+            lcd.setCursor(15, 0);
+            for (int i = 0; i < layers - 1; i++) {
+                lcd.clear();
+                lcd.setCursor(0,0);
+                lcd.print(message_split[i]);
+                lcd.setCursor(0, 1);
+                lcd.print(message_split[i + 1]);
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
+            }
+            lcd.clear();
+            }
+            displayed = 1;
     }
-    lcd.clear();        
-    lcd.setCursor(15, 0);
-    for (int i = 0; i < 6; i++) {
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print(message_split[i]);
-        lcd.setCursor(0, 1);
-        lcd.print(message_split[i + 1]);
-        delay(1000);
-    }
-    lcd.clear();
-    
-
-
-
-    delay(1000);
 }
 
-void loop() { 
-
+void ScrollHandler(void* pvParameters) {
+    int value;
+    int wait = 0;
+    for (;;) {
+        value = analogRead(XVALUEPIN);
+        if ((value > 980 || value < 95) && !wait) {
+            xQueueSendToBack(scrollQueue, &value, 1);
+            wait = 1;
+        } else {
+            vTaskDelay(200 / portTICK_PERIOD_MS);
+            wait = 0;
+        }
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+    }
 }
+
+void SelectHandler(void* pvParameters) {
+    int value;
+    int wait = 0;
+    for (;;) {
+        value = analogRead(YVALUEPIN);
+        if (value > 980 && !wait) {
+            xQueueSendToBack(ledQueue, &value, 1);
+            xQueueSendToBack(lcdQueue, &value, 1);
+            wait = 1;
+        } else {
+            vTaskDelay(200 / portTICK_PERIOD_MS);
+            wait = 0;
+        }
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+    }
+}
+
