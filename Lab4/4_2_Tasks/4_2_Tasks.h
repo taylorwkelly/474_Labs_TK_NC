@@ -1,14 +1,23 @@
+/* University of Washington
+ * ECE/CSE 474,  06/09/2023
+ *
+ *   Noah Crouch
+ *   Taylor Kelly
+ *
+ *   Lab 4: Final Project
+ *   Tasks 1 and 2
+ *
+    Header file for 4_2_Tasks.ino
+
+    Utilizes all of the same code from lab 3 except for the addition of new libraries.
+ */
 #include <Arduino_FreeRTOS.h>
-#include <queue.h>  // Not really sure why the freertos won't read queues
+#include <queue.h>
 #include <arduinoFFT.h>
 #include <stdlib.h>
 #include <task.h>
 
 #define LED_OFFBOARD 12
-
-// PySerial to get output from computer to SErial monitor, running python script from computer
-// Output data from computer into serial
-// ChatGPT to generate the words
 
 #define samples 256
 
